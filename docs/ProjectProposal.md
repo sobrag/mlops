@@ -2,8 +2,6 @@
 
 **Project Title:** News Credibility Estimation with Drift Detection and Model Monitoring  
 
-**Course Context:** MLOps  
-
 **Roles:**
 - **Sofia Bragagnolo** – Project Manager  
 - **Ester De Giosa** – Data Scientist  
@@ -36,6 +34,7 @@ We also want to support **model retraining and system adaptation** when monitore
 
 ### Relevance
 This project addresses the challenge of **misinformation**, highlighting how machine learning systems can assist users in evaluating the reliability of online content.
+
 Buisness relevance: to define monetization of the problem
 
 ---
@@ -53,10 +52,9 @@ The data pipeline includes:
 ### ML Kernel (Prediction Model)
 
 - Supervised learning model trained on labeled news articles. Model Selection:
-* Baselines: Logistic Regression, Support Vector Machines (SVM), and Random Forest.
-* Ensemble Methods: VotingClassifier to combine multiple model predictions.
-* Advanced Model: BERT (BertForSequenceClassification) for deep linguistic understanding.
-
+  * Baselines: Logistic Regression, Support Vector Machines (SVM), and Random Forest.
+  * Ensemble Methods: VotingClassifier to combine multiple model predictions.
+  * Advanced Model: BERT (BertForSequenceClassification) for deep linguistic understanding.
 - Conversion of classification outputs into a **continuous credibility score**: The system uses precision_recall_fscore_support and roc_curve to analyze the binary classification outputs before converting them into a continuous credibility score.
 
 - Offline evaluation using appropriate performance metrics
@@ -68,7 +66,7 @@ To bridge development and production:
 - Versioning of models and artifacts
 - Controlled deployment of new model versions
 
-### Monitoring and Drift Detection
+### Monitoring and Drift Detection (tbd)
 
 ---
 
@@ -91,7 +89,6 @@ The objectives of the sprints we defined in the project proposal:
 - Progress tracking and risk management
 - Documentation and reporting
 - Final delivery coordination
-
 - Dataset acquisition and exploration (WELFake)
 - Data quality assessment (missing values, duplicates, noise)
 - Data understanding and preparation
@@ -139,7 +136,6 @@ The objectives of the sprints we defined in the project proposal:
 * Setup of project structure and documentation
 
 **Deliverables:**
-
 * Cleaned and preprocessed dataset
 * Documented data pipeline
 * Initial project documentation
@@ -154,7 +150,6 @@ The objectives of the sprints we defined in the project proposal:
 * Design and calibration of the credibility score
 
 **Deliverables:**
-
 * Trained baseline credibility model
 * Evaluation results and metric analysis
 * Defined credibility scoring approach
@@ -169,21 +164,18 @@ The objectives of the sprints we defined in the project proposal:
 * Automation of the training and inference pipeline
 
 **Deliverables:**
-
 * End-to-end executable system
 * Deployed model with inference capability
 
 ---
 
 ### **Sprint 4 – Monitoring and Drift Detection**
-
 * Definition and implementation of monitoring metrics
 * Monitoring of input data and model predictions
 * Implementation of at least one drift detection method
 * Analysis of system behavior over simulated time
 
 **Deliverables:**
-
 * Monitoring and logging components
 * Drift detection mechanism
 * Drift analysis results
@@ -198,7 +190,6 @@ The objectives of the sprints we defined in the project proposal:
 * Final documentation and project delivery
 
 **Deliverables:**
-
 * Updated or retrained model
 * Final validated system
 * Complete project documentation and final report
@@ -216,11 +207,11 @@ The objectives of the sprints we defined in the project proposal:
 - **Dataset:** WELFake  
 - **Programming Language:** Python 3.12  
 - **ML & Data Libraries:** 
-* Data Handling: pandas, numpy, datasets (Hugging Face)
-* Visualization: matplotlib, seaborn, wordcloud
-* Preprocessing: re (Regular Expressions), TfidfVectorizer
-* Classical ML (Scikit-learn): LogisticRegression, SVC, LinearSVC, RandomForestClassifier, MLPClassifier, KMeans, VotingClassifier
-* Deep Learning & NLP: torch (PyTorch), transformers (BERT Tokenizer and Sequence Classification)
+  - **Data Handling**: pandas, numpy, datasets (Hugging Face)
+  - **Visualization**: matplotlib, seaborn, wordcloud
+  - **Preprocessing**: re (Regular Expressions), TfidfVectorizer
+  - **Classical ML (Scikit-learn):** LogisticRegression, SVC, LinearSVC, RandomForestClassifier, MLPClassifier, KMeans, VotingClassifier
+  - **Deep Learning & NLP:** torch (PyTorch), transformers (BERT Tokenizer and Sequence Classification)
 - **MLOps Tools:** Git, CI/CD pipelines, monitoring frameworks 
 - **Resources:** 
 - **Infrastructure:** 
@@ -228,4 +219,4 @@ The objectives of the sprints we defined in the project proposal:
 ---
 
 ## THEORETICAL REFERENCES
-- Treveil, M. et al., *Introducing MLOps*, O’Reilly Media  
+- Treveil, M. et al., *Introducing MLOps*
