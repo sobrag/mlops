@@ -1,0 +1,17 @@
+# Core scientific stack
+numpy
+pandas
+
+# Machine Learning
+scikit-learn
+
+# NLP (baseline)
+nltk
+
+# Configuration & utilities
+pyyaml
+joblib
+
+# Quality & testing
+pytest
+ruff
