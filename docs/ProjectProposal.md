@@ -1,5 +1,6 @@
 # PROJECT PROPOSAL & DEVELOPMENT PLAN
 
+**Version:** 1.1  
 **Project Title:** News Credibility Estimation with Drift Detection and Model Monitoring  
 
 **Roles:**
@@ -35,7 +36,7 @@ We also want to support **model retraining and system adaptation** when monitore
 ### Relevance
 This project addresses the challenge of **misinformation**, highlighting how machine learning systems can assist users in evaluating the reliability of online content.
 
-Buisness relevance: to define monetization of the problem
+**Business relevance:** To provide a trust-score tool for digital platforms, reducing the spread of unreliable information and enhancing user experience.
 
 ---
 
@@ -56,9 +57,7 @@ The data pipeline includes:
   * Ensemble Methods: VotingClassifier to combine multiple model predictions.
   * Advanced Model: BERT (BertForSequenceClassification) for deep linguistic understanding.
 - Conversion of classification outputs into a **continuous credibility score**: The system uses precision_recall_fscore_support and roc_curve to analyze the binary classification outputs before converting them into a continuous credibility score.
-
-- Offline evaluation using appropriate performance metrics
-
+- Offline evaluation using appropriate performance metrics.
 
 ### CI/CD Pipeline
 To bridge development and production:
@@ -66,29 +65,27 @@ To bridge development and production:
 - Versioning of models and artifacts
 - Controlled deployment of new model versions
 
-### Monitoring and Drift Detection (tbd)
+### Monitoring and Drift Detection
 
 ---
 
 ## MILESTONES
 The objectives of the sprints we defined in the project proposal: 
-1. Data exploration and preprocessing completed  
-2. Baseline credibility estimation model developed  
-3. Automated pipeline implemented  
-4. Monitoring and drift detection enabled  
+1. Data exploration and infrastructure foundation established  
+2. Baseline credibility model and monitoring stack prototype developed  
+3. Automated pipeline and full system integration implemented  
+4. Advanced monitoring and drift detection enabled  
 5. System adaptation and final validation completed  
 
 ---
 
 ## WORK BREAKDOWN STRUCTURE (WBS)
 
-### 1. Project and Data Management (sprint 1)
+### 1. Project, Data Management & Infrastructure Setup (Sprint 1)
 - Requirements definition
 - Define project scope and objectives
 - Sprint planning and coordination
-- Progress tracking and risk management
-- Documentation and reporting
-- Final delivery coordination
+- Infrastructure setup (Docker environment configuration)
 - Dataset acquisition and exploration (WELFake)
 - Data quality assessment (missing values, duplicates, noise)
 - Data understanding and preparation
@@ -96,29 +93,30 @@ The objectives of the sprints we defined in the project proposal:
 - Feature engineering
 - Dataset splitting and versioning
 
-### 2. Credibility Estimation Model Development (sprint 2)
+### 2. Credibility Estimation Model & Mock Monitoring (Sprint 2)
 - Baseline model selection and implementation
 - Model training and hyperparameter tuning
 - Model evaluation and metric selection
 - Credibility score definition and calibration
-- Model documentation
+- Development of Mock API (Flask) for early integration testing
+- Initial Monitoring Stack setup (Prometheus & Grafana) connected to Mock API
+- Model evaluation and metric selection
 
-### 3. Deployment and System Integration (sprint 3)
-- Design system architecture
-- Implement inference pipeline
+### 3. Deployment and System Integration (Sprint 3)
+- Finalize system architecture
+- Integration of trained model into existing infrastructure (Swapping Mock with Real Model)
 - Develop input/output interfaces
-- Integrate model with preprocessing pipeline
-- end-to-end workflow testing
+- End-to-end workflow testing
 - Pipeline automation
 
-### 4. Monitoring and Drift Observation (sprint 4)
+### 4. Monitoring and Drift Observation (Sprint 4)
 - Define monitoring metrics for inputs and outputs
 - Implement data and/or prediction drift detection methods
 - Simulate data drift using time-based data splits?
 - Validate drift detection results
 - Define retraining strategy 
 
-### 5. System Adaptation and Finalization (sprint 5)
+### 5. System Adaptation and Finalization (Sprint 5)
 - Implement model update workflow
 - Re-evaluate updated model performance
 - Final system validation
@@ -128,29 +126,33 @@ The objectives of the sprints we defined in the project proposal:
 
 ## GANTT-STYLE SCHEDULE
 
-### **Sprint 1 – Data Understanding and Preparation**
+### **Sprint 1 – Data Understanding and Infrastructure Foundation**
 
 * Exploratory analysis of the WELFake dataset
 * Data cleaning and text preprocessing
 * Definition of the initial data processing pipeline
 * Setup of project structure and documentation
+* Setup of Docker environment and basic infrastructure
 
 **Deliverables:**
 * Cleaned and preprocessed dataset
 * Documented data pipeline
 * Initial project documentation
+* Docker Compose configuration for the project
 
 ---
 
-### **Sprint 2 – Credibility Estimation Model Development**
+### **Sprint 2 – Credibility Estimation & Monitoring Prototype**
 
 * Selection and implementation of a baseline model
 * Model training and hyperparameter tuning
 * Definition of evaluation metrics
+* Implementation of Mock API and initial Grafana dashboards
 * Design and calibration of the credibility score
 
 **Deliverables:**
 * Trained baseline credibility model
+* Functional Monitoring Stack
 * Evaluation results and metric analysis
 * Defined credibility scoring approach
 
@@ -158,21 +160,22 @@ The objectives of the sprints we defined in the project proposal:
 
 ### **Sprint 3 – System Integration**
 
-* Integration of preprocessing and model components
+* Integration of the real ML model into the Flask API (replacing Mock)
 * Model deployment setup
-* Implementation of the inference workflow
+* Implementation of the user interface
 * Automation of the training and inference pipeline
 
 **Deliverables:**
 * End-to-end executable system
+* Fully integrated User Dashboard
 * Deployed model with inference capability
 
 ---
 
 ### **Sprint 4 – Monitoring and Drift Detection**
 * Definition and implementation of monitoring metrics
+* Implementation of specific drift detection algorithms
 * Monitoring of input data and model predictions
-* Implementation of at least one drift detection method
 * Analysis of system behavior over simulated time
 
 **Deliverables:**
@@ -205,7 +208,7 @@ The objectives of the sprints we defined in the project proposal:
 ## RESOURCES & INFRASTRUCTURE
 
 - **Dataset:** WELFake  
-- **Programming Language:** Python 3.12  
+- **Programming Language:** Python 3.12
 - **ML & Data Libraries:** 
   - **Data Handling**: pandas, numpy, datasets (Hugging Face)
   - **Visualization**: matplotlib, seaborn, wordcloud
@@ -214,9 +217,8 @@ The objectives of the sprints we defined in the project proposal:
   - **Deep Learning & NLP:** torch (PyTorch), transformers (BERT Tokenizer and Sequence Classification)
 - **MLOps Tools:** Git, CI/CD pipelines, monitoring frameworks 
 - **Resources:** 
-- **Infrastructure:** 
-
----
-
-## THEORETICAL REFERENCES
-- Treveil, M. et al., *Introducing MLOps*
+- **Infrastructure & Monitoring:** - **Docker & Docker Compose** (Containerization)
+  - **Prometheus** (Metrics Collection)
+  - **Grafana** (Visualization & Alerting)
+  - **Flask** (Inference API)
+  - **Streamlit** (User Interface)
