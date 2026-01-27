@@ -9,6 +9,8 @@ The project is considered done when all the following tasks have been done:
 - Train/test splits are reproducible and stratified
 - Data preparation code is modular and readable
 - Dataset assumptions and limitations are documented
+- Docker environment is configured (docker-compose.yml created)
+- Project folder structure for code, docs, and monitoring is established
 
 ## Sprint 2
 - Baseline model is trained and evaluated
@@ -18,8 +20,12 @@ The project is considered done when all the following tasks have been done:
 - Evaluation metrics include Accuracy, Precision, Recall, F1, ROC
 - The model architecture, parameters, and training process are documented
 - The system can ingest a news article (title and text) and output a credibility score
+- Mock API (Flask) is implemented to simulate inference flow
+- Basic Monitoring Stack (Prometheus & Grafana) is active and collecting metrics from the Mock API
 
 ## Sprint 3
+- The real trained model is integrated into the Flask API (replacing the Mock)
+- User Interface is implemented and connected to the API
 - The system supports batch
 - The system can be run end-to-end following documented instructions (tbd)
 - Model predictions can be logged for monitoring purposes

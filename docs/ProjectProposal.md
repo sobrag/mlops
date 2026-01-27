@@ -36,7 +36,7 @@ We also want to support **model retraining and system adaptation** when monitore
 ### Relevance
 This project addresses the challenge of **misinformation**, highlighting how machine learning systems can assist users in evaluating the reliability of online content.
 
-**Business relevance:** To provide a trust-score tool for digital platforms, reducing the spread of unreliable information and enhancing user experience.
+**Business relevance:** Still to define, but a potential application could be for reducing the spread of unreliable information on social media platforms or news aggregators.
 
 ---
 
@@ -65,13 +65,13 @@ To bridge development and production:
 - Versioning of models and artifacts
 - Controlled deployment of new model versions
 
-### Monitoring and Drift Detection
+### Monitoring and Drift Detection (tbd)
 
 ---
 
 ## MILESTONES
 The objectives of the sprints we defined in the project proposal: 
-1. Data exploration and infrastructure foundation established  
+1. Data exploration, preprocessing and infrastructure foundation 
 2. Baseline credibility model and monitoring stack prototype developed  
 3. Automated pipeline and full system integration implemented  
 4. Advanced monitoring and drift detection enabled  
