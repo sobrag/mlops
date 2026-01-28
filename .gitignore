@@ -215,5 +215,5 @@ __marimo__/
 .venv/
 
 # Data & outputs
-data/
-results/
+/data/
+/results/
