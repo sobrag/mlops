@@ -1,0 +1,9 @@
+def test_imports():
+    import src.config
+    import src.data.load_data
+    import src.data.preprocess
+    import src.features.vectorize
+    import src.models.train
+    import src.models.calibrate
+    import src.models.predict
+    import src.models.evaluate
