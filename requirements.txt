@@ -1,6 +1,7 @@
 # Core scientific stack
 numpy
 pandas
+scipy
 
 # Machine Learning
 scikit-learn
