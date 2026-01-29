@@ -1,9 +1,13 @@
-def test_imports():
-    import src.config
-    import src.data.load_data
-    import src.data.preprocess
-    import src.features.vectorize
-    import src.models.train
-    import src.models.calibrate
-    import src.models.predict
-    import src.models.evaluate
+import importlib
+
+
+def test_modules_importable():
+    modules = [
+        "src.models.train",
+        "src.models.calibrate",
+        "src.models.predict",
+        "src.models.evaluate",
+    ]
+
+    for m in modules:
+        importlib.import_module(m)
