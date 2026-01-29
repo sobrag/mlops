@@ -222,4 +222,12 @@ artifacts/
 
 # Experiment tracking
 .neptune/
-mlruns/
+mlruns/git status
+
+
+# Ignore full datasets
+data/*.csv
+
+# Track sample dataset for tests
+!data/sample_welfake.csv
+
