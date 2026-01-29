@@ -24,10 +24,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Show versions
+        run: |
+          python --version
+          pip --version
+          ruff --version
+          python -m pytest --version
+
       - name: Lint (ruff)
         run: |
           ruff check .
 
+      # Optional: only if you're actually using ruff format
+      # - name: Format check (ruff)
+      #   run: |
+      #     ruff format --check .
+
       - name: Run tests (pytest)
         run: |
-          pytest -q
+          python -m pytest -q

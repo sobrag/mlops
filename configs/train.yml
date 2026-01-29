@@ -1,0 +1,23 @@
+seed: 42
+test_size: 0.2
+
+title_col: "title"
+text_col: "text"
+label_col: "label"
+combined_col: "full_text"
+clean_col: "clean_text"
+
+tfidf_max_features: 5000
+tfidf_ngram_range: [1, 2]
+tfidf_stop_words: "english"
+
+lr_solver: "liblinear"
+lr_max_iter: 100
+
+paths:
+  raw_data_path: "data/WELFake_dataset.csv"
+  artifacts_dir: "artifacts"
+
+logging:
+  use_neptune: false   # put false before commiting
+  neptune_mode: "offline"   #  "offline" or "async"
