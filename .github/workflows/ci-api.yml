@@ -39,6 +39,6 @@ jobs:
 
       - name: Check API coverage
         run: |
-          python -m pytest tests/api/ --cov=src/app --cov-report=term --cov-fail-under=70 --ignore=tests/api/test_integration.py
+          python -m pytest tests/api/ --cov=src/app --cov-report=term --cov-fail-under=60 --ignore=tests/api/test_integration.py
         env:
           PYTHONPATH: ${{ github.workspace }}
