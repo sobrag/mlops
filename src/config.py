@@ -65,7 +65,7 @@ class Config:
     project_root: Path = Path(__file__).resolve().parents[1]
 
     # Input data
-    raw_data_path: Path = project_root / "data" / "WELFake_dataset.csv"
+    raw_data_path: Path = project_root / "data" / "sample_welfake.csv"
 
     # Outputs
     results_dir: Path = project_root / "results"
