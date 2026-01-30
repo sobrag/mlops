@@ -20,15 +20,11 @@ class Config:
     Defaults live here; YAML overrides them.
     """
 
-    # -------------------------
     # Reproducibility
-    # -------------------------
     seed: int = 42
     test_size: float = 0.2
 
-    # -------------------------
     # Dataset columns
-    # -------------------------
     title_col: str = "title"
     text_col: str = "text"
     label_col: str = "label"
@@ -37,31 +33,25 @@ class Config:
     combined_col: str = "full_text"
     clean_col: str = "clean_text"
 
-    # -------------------------
     # TF-IDF configuration
-    # -------------------------
     tfidf_max_features: int = 5000
     tfidf_ngram_range: Tuple[int, int] = (1, 2)
     tfidf_stop_words: str = "english"
 
-    # -------------------------
     # Logistic Regression baseline
-    # -------------------------
     lr_solver: str = "liblinear"
     lr_max_iter: int = 100
 
-    # -------------------------
     # Logging / tracking
-    # -------------------------
-    use_neptune: bool = False
-    neptune_project: Optional[str] = None
-    neptune_api_token_env: str = "NEPTUNE_API_TOKEN"  # token read from env
-    neptune_mode: str = "async"
+    use_wandb: bool = False  
+    wandb_project: Optional[str] = None  
+    wandb_entity: Optional[str] = None
+    wandb_mode: str = "online"
 
+    # W&B Dataset artifact (optional)
+    dataset_artifact: Optional[str] = None  # ✅ AGGIUNGI QUESTO
 
-    # -------------------------
     # Paths
-    # -------------------------
     project_root: Path = Path(__file__).resolve().parents[1]
 
     # Input data
@@ -71,50 +61,48 @@ class Config:
     results_dir: Path = project_root / "results"
     artifacts_dir: Path = project_root / "artifacts"
 
-    # (Optional legacy single-file outputs; you can remove later once artifacts are in place)
     preprocess_metadata_path: Path = results_dir / "preprocessing_metadata.json"
 
     @classmethod
     def from_yaml(cls, yaml_path: str | Path) -> "Config":
         """
         Load config from YAML. YAML overrides dataclass defaults.
-        Supports optional nested sections:
-          paths: { raw_data_path: "...", results_dir: "...", artifacts_dir: "..." }
-          logging: { use_neptune: true, neptune_project: "...", neptune_api_token_env: "..." }
         """
         yaml_path = Path(yaml_path)
-        base = cls()  # defaults
+        base = cls()
 
         with open(yaml_path, "r", encoding="utf-8") as f:
             data: Dict[str, Any] = yaml.safe_load(f) or {}
 
-        # Flatten optional nested keys (so your YAML can be nice and clean)
+        # Flatten nested sections
         paths = data.pop("paths", {}) or {}
-        logging = data.pop("logging", {}) or {}
+        logging_cfg = data.pop("logging", {}) or {}
+        data_cfg = data.pop("data", {}) or {}  # ✅ AGGIUNGI QUESTO
 
-        # Start from defaults and override with YAML
         cfg = base
 
-        # Top-level overrides (seed, test_size, tfidf_*, lr_*, columns...)
-        # Handle tfidf_ngram_range if YAML uses list [1,2]
+        # Handle tfidf_ngram_range
         if "tfidf_ngram_range" in data:
             ngr = data["tfidf_ngram_range"]
             if isinstance(ngr, (list, tuple)) and len(ngr) == 2:
                 data["tfidf_ngram_range"] = (int(ngr[0]), int(ngr[1]))
 
-        # Apply simple overrides that match dataclass fields
-        # (ignore unknown keys to avoid crashing on extra YAML keys)
+        # Apply top-level overrides
         for k, v in data.items():
             if hasattr(cfg, k):
                 cfg = replace(cfg, **{k: v})
 
         # Apply logging overrides
-        for k, v in logging.items():
+        for k, v in logging_cfg.items():
             if hasattr(cfg, k):
                 cfg = replace(cfg, **{k: v})
 
-        # Apply path overrides (resolve relative to project root)
-        # Note: project_root stays the repo root inferred from this file.
+        # Apply data overrides (dataset_artifact)  ✅ AGGIUNGI QUESTO
+        for k, v in data_cfg.items():
+            if hasattr(cfg, k):
+                cfg = replace(cfg, **{k: v})
+
+        # Apply path overrides
         if "raw_data_path" in paths:
             cfg = replace(cfg, raw_data_path=_as_path(cfg.project_root, paths["raw_data_path"]))
         if "results_dir" in paths:
@@ -122,7 +110,7 @@ class Config:
         if "artifacts_dir" in paths:
             cfg = replace(cfg, artifacts_dir=_as_path(cfg.project_root, paths["artifacts_dir"]))
 
-        # Recompute dependent paths if results_dir changed
+        # Recompute dependent paths
         cfg = replace(cfg, preprocess_metadata_path=cfg.results_dir / "preprocessing_metadata.json")
 
         return cfg

@@ -145,21 +145,34 @@ def preprocess_pipeline(df_raw: pd.DataFrame) -> Tuple[pd.DataFrame, Dict]:
 
 
 if __name__ == "__main__":
-    # Test preprocessing
+    import argparse
+    from pathlib import Path
     from src.data.load_data import load_csv
 
-    # Load raw data
-    df_raw = load_csv("data/WELFake_Dataset.csv")
-    
-    # Preprocess
+    parser = argparse.ArgumentParser(description="Run preprocessing on a CSV file.")
+    parser.add_argument(
+        "--input",
+        type=str,
+        default="data/sample_welfake.csv",
+        help="Path to input CSV (default: data/sample_welfake.csv)",
+    )
+    args = parser.parse_args()
+
+    input_path = Path(args.input)
+    if not input_path.exists():
+        raise FileNotFoundError(
+            f"Input file not found: {input_path}. "
+            "Use --input to point to an existing CSV (e.g., data/sample_welfake.csv)."
+        )
+
+    df_raw = load_csv(input_path)
     df_prepared, metadata = preprocess_pipeline(df_raw)
-    
+
     print("\n=== Preprocessing Results ===")
     print(f"Total rows: {metadata['total_rows']}")
     print(f"Class distribution: {metadata['class_distribution']}")
     print(f"\nFirst few rows:\n{df_prepared[['clean_text', 'label']].head()}")
-    
-    # Extract features and labels
+
     X, y = split_features_labels(df_prepared)
     print(f"\nFeatures shape: {X.shape}")
     print(f"Labels shape: {y.shape}")
