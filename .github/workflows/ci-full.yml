@@ -10,6 +10,9 @@ jobs:
   full-test:
     runs-on: ubuntu-latest
 
+    env:
+      WANDB_MODE: "offline"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
