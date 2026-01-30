@@ -2,7 +2,7 @@
 API route blueprints.
 """
 from flask import Blueprint, request, jsonify
-from src.app.services import ModelService, MockModelService
+from src.app.services import ModelService
 
 _model_service = None
 
