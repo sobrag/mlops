@@ -19,5 +19,11 @@ paths:
   artifacts_dir: "artifacts"
 
 logging:
-  use_neptune: false   # put false before commiting
-  neptune_mode: "offline"   #  "offline" or "async"
+  use_wandb: true  
+  wandb_project: "mlops"  # Your W&B project name
+  wandb_entity: null  # Your W&B username/team (optional)
+  wandb_mode: "online"  # "online", "offline", or "disabled"
+
+data:
+  dataset_artifact: "welfake_dataset:latest"
+

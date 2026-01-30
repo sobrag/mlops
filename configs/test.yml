@@ -1,0 +1,24 @@
+seed: 42
+test_size: 0.2
+
+title_col: "title"
+text_col: "text"
+label_col: "label"
+combined_col: "full_text"
+clean_col: "clean_text"
+
+tfidf_max_features: 1000  # Ridotto per test veloci
+tfidf_ngram_range: [1, 2]
+tfidf_stop_words: "english"
+
+lr_solver: "liblinear"
+lr_max_iter: 100
+
+paths:
+  raw_data_path: "data/sample_welfake.csv"
+  results_dir: "results"
+  artifacts_dir: "artifacts"
+
+logging:
+  use_wandb: false  # Disable for tests
+  wandb_mode: "disabled"  # Ensure no W&B calls during testing
