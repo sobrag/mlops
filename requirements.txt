@@ -16,12 +16,12 @@ joblib
 # Quality & testing
 pytest
 ruff
-pyyaml
 neptune
 
 # API dependencies
 flask==3.0.0
 flask-cors==4.0.0
+gunicorn>=21.0.0
 
 # Testing
 pytest-cov

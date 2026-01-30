@@ -20,9 +20,9 @@ paths:
 
 logging:
   use_wandb: true  
-  wandb_project: "mlops"  # Your W&B project name
-  wandb_entity: null  # Your W&B username/team (optional)
-  wandb_mode: "online"  # "online", "offline", or "disabled"
+  wandb_project: "mlops"  
+  wandb_entity: null  
+  wandb_mode: "online"
 
 data:
   dataset_artifact: "welfake_dataset:latest"

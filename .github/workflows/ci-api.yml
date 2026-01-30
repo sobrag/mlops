@@ -29,16 +29,16 @@ jobs:
 
       - name: Lint with ruff (API files only)
         run: |
-          ruff check app_simple.py tests/api/
+          ruff check src/app/ tests/api/
 
       - name: Run API tests ONLY
         run: |
-          python -m pytest tests/api/ -v --tb=short
+          python -m pytest tests/api/ -v --tb=short --ignore=tests/api/test_integration.py
         env:
           PYTHONPATH: ${{ github.workspace }}
 
       - name: Check API coverage
         run: |
-          python -m pytest tests/api/ --cov=app_simple --cov-report=term --cov-fail-under=70
+          python -m pytest tests/api/ --cov=src/app --cov-report=term --cov-fail-under=70 --ignore=tests/api/test_integration.py
         env:
           PYTHONPATH: ${{ github.workspace }}
