@@ -16,6 +16,7 @@ joblib
 # Quality & testing
 pytest
 ruff
+pyyaml
 neptune
 
 # API dependencies
