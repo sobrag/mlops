@@ -63,7 +63,8 @@ def _wandb_init_if_enabled(cfg, run_dir: Path):
 
     project = getattr(cfg, "wandb_project", None) or os.getenv("WANDB_PROJECT") or "mlops"
     entity = getattr(cfg, "wandb_entity", None) or os.getenv("WANDB_ENTITY") or None
-    mode = getattr(cfg, "wandb_mode", None) or os.getenv("WANDB_MODE") or "online"
+    # Environment variable takes precedence over config
+    mode = os.getenv("WANDB_MODE") or getattr(cfg, "wandb_mode", None) or "online"
 
     run = wandb.init(
         project=project,
