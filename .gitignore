@@ -227,3 +227,8 @@ mlruns
 # Data
 data/*
 !data/sample_welfake.csv
+
+# Weights & Biases
+wandb/
+.wandb/
+
