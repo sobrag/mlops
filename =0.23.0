@@ -1,0 +1,16 @@
+Collecting prometheus-flask-exporter
+  Downloading prometheus_flask_exporter-0.23.2-py3-none-any.whl.metadata (20 kB)
+Collecting prometheus_client (from prometheus-flask-exporter)
+  Downloading prometheus_client-0.24.1-py3-none-any.whl.metadata (2.1 kB)
+Requirement already satisfied: flask in ./.venv/lib/python3.12/site-packages (from prometheus-flask-exporter) (3.0.0)
+Requirement already satisfied: Werkzeug>=3.0.0 in ./.venv/lib/python3.12/site-packages (from flask->prometheus-flask-exporter) (3.1.5)
+Requirement already satisfied: Jinja2>=3.1.2 in ./.venv/lib/python3.12/site-packages (from flask->prometheus-flask-exporter) (3.1.6)
+Requirement already satisfied: itsdangerous>=2.1.2 in ./.venv/lib/python3.12/site-packages (from flask->prometheus-flask-exporter) (2.2.0)
+Requirement already satisfied: click>=8.1.3 in ./.venv/lib/python3.12/site-packages (from flask->prometheus-flask-exporter) (8.3.1)
+Requirement already satisfied: blinker>=1.6.2 in ./.venv/lib/python3.12/site-packages (from flask->prometheus-flask-exporter) (1.9.0)
+Requirement already satisfied: MarkupSafe>=2.0 in ./.venv/lib/python3.12/site-packages (from Jinja2>=3.1.2->flask->prometheus-flask-exporter) (3.0.3)
+Downloading prometheus_flask_exporter-0.23.2-py3-none-any.whl (19 kB)
+Downloading prometheus_client-0.24.1-py3-none-any.whl (64 kB)
+Installing collected packages: prometheus_client, prometheus-flask-exporter
+
+Successfully installed prometheus-flask-exporter-0.23.2 prometheus_client-0.24.1
