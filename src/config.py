@@ -20,6 +20,9 @@ class Config:
     Defaults live here; YAML overrides them.
     """
 
+    # Model selection
+    model_name: str = "logreg"
+
     # Reproducibility
     seed: int = 42
     test_size: float = 0.2
@@ -41,6 +44,7 @@ class Config:
     # Logistic Regression baseline
     lr_solver: str = "liblinear"
     lr_max_iter: int = 100
+    lr_C: float = 1.0
 
     # Logging / tracking
     use_wandb: bool = False  
@@ -49,7 +53,7 @@ class Config:
     wandb_mode: str = "online"
 
     # W&B Dataset artifact (optional)
-    dataset_artifact: Optional[str] = None  # ✅ AGGIUNGI QUESTO
+    dataset_artifact: Optional[str] = None
 
     # Paths
     project_root: Path = Path(__file__).resolve().parents[1]
@@ -77,7 +81,7 @@ class Config:
         # Flatten nested sections
         paths = data.pop("paths", {}) or {}
         logging_cfg = data.pop("logging", {}) or {}
-        data_cfg = data.pop("data", {}) or {}  # ✅ AGGIUNGI QUESTO
+        data_cfg = data.pop("data", {}) or {}
 
         cfg = base
 
@@ -97,7 +101,7 @@ class Config:
             if hasattr(cfg, k):
                 cfg = replace(cfg, **{k: v})
 
-        # Apply data overrides (dataset_artifact)  ✅ AGGIUNGI QUESTO
+        # Apply data overrides (dataset_artifact)
         for k, v in data_cfg.items():
             if hasattr(cfg, k):
                 cfg = replace(cfg, **{k: v})

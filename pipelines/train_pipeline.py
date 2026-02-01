@@ -143,7 +143,7 @@ def run_training(cfg: Config, run_dir: Path, *, max_rows: int | None = None) -> 
             lr_max_iter=cfg.lr_max_iter,
             random_state=cfg.seed,
         )
-        base_model = train_model("logreg", Xtr, y_train, cfg=train_cfg)
+        base_model = train_model(cfg.model_name, Xtr, y_train, cfg=train_cfg)
 
         calib_cfg = CalibrateConfig(method="isotonic", cv=5)
         model = calibrate_model(base_model, Xtr, y_train, cfg=calib_cfg)
@@ -170,6 +170,7 @@ def run_training(cfg: Config, run_dir: Path, *, max_rows: int | None = None) -> 
             "run_dir": str(run_dir),
             "dataset_path": str(dataset_path),
             "dataset_artifact": getattr(cfg, "dataset_artifact", None),
+            "model_name": cfg.model_name,
             "config": {k: str(v) if isinstance(v, Path) else v for k, v in asdict(cfg).items()},
             "train_config": asdict(train_cfg),
             "calibrate_config": asdict(calib_cfg),
@@ -275,7 +276,7 @@ if __name__ == "__main__":
     
     # Run training
     try:
-        logger.info("🚀 Starting training pipeline...")
+        logger.info("Starting training pipeline...")
         metrics = run_training(cfg, run_dir, max_rows=args.max_rows)
         
         # Print results

@@ -7,7 +7,7 @@ label_col: "label"
 combined_col: "full_text"
 clean_col: "clean_text"
 
-tfidf_max_features: 1000  # Ridotto per test veloci
+tfidf_max_features: 1000 
 tfidf_ngram_range: [1, 2]
 tfidf_stop_words: "english"
 
