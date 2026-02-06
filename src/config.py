@@ -82,6 +82,7 @@ class Config:
         paths = data.pop("paths", {}) or {}
         logging_cfg = data.pop("logging", {}) or {}
         data_cfg = data.pop("data", {}) or {}
+        data_cfg = data.pop("data", {}) or {}
 
         cfg = base
 
@@ -101,6 +102,7 @@ class Config:
             if hasattr(cfg, k):
                 cfg = replace(cfg, **{k: v})
 
+        # Apply data overrides (dataset_artifact)
         # Apply data overrides (dataset_artifact)
         for k, v in data_cfg.items():
             if hasattr(cfg, k):

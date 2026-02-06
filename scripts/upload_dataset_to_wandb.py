@@ -1,4 +1,3 @@
-"""Upload WELFake dataset to W&B as an artifact."""
 import wandb
 from pathlib import Path
 

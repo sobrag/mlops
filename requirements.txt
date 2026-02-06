@@ -12,19 +12,17 @@ nltk
 # Configuration & utilities
 pyyaml
 joblib
+wandb>=0.16.0
+pyarrow
+
 
 # Quality & testing
 pytest
 ruff
-neptune
+pytest-cov
 
 # API dependencies
 flask==3.0.0
 flask-cors==4.0.0
 gunicorn>=21.0.0
 prometheus-flask-exporter>=0.23.0
-
-# Testing
-pytest-cov
-
-wandb>=0.16.0

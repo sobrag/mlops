@@ -67,7 +67,6 @@ def prepare_dataset(df: pd.DataFrame) -> pd.DataFrame:
     logger.info(f"Final dataset: {len(df)} rows")
     logger.info(f"Class distribution:\n{df['label'].value_counts()}")
     
-    # aggiunto
     if df.empty:
         raise ValueError("Dataset is empty after preprocessing")
 

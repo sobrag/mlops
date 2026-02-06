@@ -15,7 +15,7 @@ from sklearn.metrics import (
 )
 
 
-# CHECK THIS
+
 # Optional: only used if you want a quick calibration diagnostic number
 # (won't break if you don't use it in your pipeline)
 try:
