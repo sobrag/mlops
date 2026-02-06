@@ -50,3 +50,54 @@ jobs:
           python -m pytest tests/api/ -v --tb=short
         env:
           PYTHONPATH: ${{ github.workspace }}
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: full-test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate docker-compose.yml
+        run: |
+          docker compose config --quiet
+          echo "✅ docker-compose.yml is valid"
+
+      - name: Create dummy artifacts directory
+        run: |
+          mkdir -p artifacts/dummy
+          echo "placeholder" > artifacts/dummy/.gitkeep
+
+      - name: Build API Docker image
+        run: |
+          docker build -t news-credibility-api:test -f src/app/Dockerfile .
+          echo "✅ Docker image built successfully"
+
+      - name: Start services and health check
+        run: |
+          docker compose up -d
+          echo "Waiting for services to start..."
+          sleep 15
+          
+          # Health check API
+          curl --retry 5 --retry-delay 3 --retry-connrefused -f http://localhost:5001/health || exit 1
+          echo "✅ API health check passed"
+          
+          # Verify Prometheus is scraping
+          curl -f http://localhost:9090/api/v1/targets | grep -q "news_credibility_api" || exit 1
+          echo "✅ Prometheus targets configured"
+          
+          # Verify Grafana is running
+          curl -f http://localhost:3000/api/health || exit 1
+          echo "✅ Grafana health check passed"
+
+      - name: Show container logs on failure
+        if: failure()
+        run: |
+          docker compose logs
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker compose down -v
