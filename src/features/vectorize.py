@@ -14,7 +14,7 @@ TextInput = Union[Iterable[str], list[str]]
 @dataclass
 class TextVectorizer:
     """
-    Minimal, MLOps-friendly TF-IDF wrapper.
+    Minimal TF-IDF wrapper.
 
     - Keeps config (max_features/ngram_range/stop_words) together with the fitted vectorizer.
     - Has a small API: fit / transform / fit_transform / save / load
@@ -43,7 +43,7 @@ class TextVectorizer:
         return self.vectorizer.transform(texts)
 
     def fit_transform(self, texts: TextInput) -> csr_matrix:
-        self.fit(texts)
+        # Single-pass fit + transform
         return self.vectorizer.fit_transform(texts)
 
     def save(self, path: Union[str, Path]) -> None:

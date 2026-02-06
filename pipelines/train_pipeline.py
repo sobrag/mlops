@@ -119,8 +119,9 @@ def run_training(cfg: Config, run_dir: Path, *, max_rows: int | None = None) -> 
         preprocessing_meta_path = run_dir / "preprocessing_metadata.json"
         save_json(metadata, preprocessing_meta_path)
 
-        X = df[cfg.clean_col].values
-        y = df[cfg.label_col].values
+        # Force numpy arrays to avoid pandas Arrow dtypes with pyarrow backend
+        X = df[cfg.clean_col].astype(str).to_numpy()
+        y = df[cfg.label_col].astype(int).to_numpy()
 
         X_train, X_test, y_train, y_test = train_test_split(
             X,
@@ -160,8 +161,8 @@ def run_training(cfg: Config, run_dir: Path, *, max_rows: int | None = None) -> 
         metrics_path = run_dir / "metrics.json"
         run_config_path = run_dir / "run_config.json"
 
-        # Fixed: use save_joblib instead of vectorizer.save()
-        save_joblib(vectorizer, vectorizer_path)
+        # Persist vectorizer with its native save (includes config payload)
+        vectorizer.save(vectorizer_path)
         save_joblib(model, model_path)
         save_json(metrics, metrics_path)
 
