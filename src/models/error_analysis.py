@@ -81,9 +81,9 @@ def log_error_analysis(run_id: str, run_dir_path: str, config_path: str = "confi
         
         with open(metrics_path, "w") as f:
             json.dump(existing_metrics, f, indent=4)
-        print(f"metrics.json aggiornato in locale!")
+        print("Local metrics.json updated successfully")
     else:
-        print(f"Attenzione: metrics.json non trovato in {run_dir}")
+        print(f"Warning: metrics.json not found in {run_dir}")
 
     run.finish()
     print(f"Logged FP/FN to W&B run {run_id}. Num FP={len(fp)}, Num FN={len(fn)}")
