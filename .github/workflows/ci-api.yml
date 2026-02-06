@@ -1,12 +1,7 @@
-# =============================================================================
-# CI API - Development Workflow
-# =============================================================================
 # This workflow was used during development on the 'api' branch.
 # Now that the API has been merged to main, this workflow is kept for reference
 # and will only run if the 'api' branch is recreated for future API development.
-#
-# For production validation (including Docker build), see: ci-full.yml
-# =============================================================================
+# For production validation, see: ci-full.yml
 
 name: CI API
 
