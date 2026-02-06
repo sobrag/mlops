@@ -1,3 +1,5 @@
+model_name: logreg
+
 seed: 42
 test_size: 0.2
 
@@ -7,12 +9,13 @@ label_col: "label"
 combined_col: "full_text"
 clean_col: "clean_text"
 
-tfidf_max_features: 20000
+tfidf_max_features: 5000
 tfidf_ngram_range: [1, 2]
 tfidf_stop_words: "english"
 
 lr_solver: "liblinear"
 lr_max_iter: 100
+lr_C: 1.0
 
 paths:
   raw_data_path: "data/WELFake_dataset.csv"
