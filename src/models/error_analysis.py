@@ -24,8 +24,11 @@ def log_error_analysis(run_id: str, run_dir_path: str, config_path: str = "confi
     run_dir = Path(run_dir_path)  # ensure Path-like
 
     # Load trained model and vectorizer
-    model = joblib.load(f"{run_dir}/model.joblib")
-    vectorizer = joblib.load(f"{run_dir}/vectorizer.joblib")
+    raw_model = joblib.load(run_dir / "model.joblib")
+    model = raw_model['model'] if isinstance(raw_model, dict) else raw_model
+
+    raw_vect = joblib.load(run_dir / "vectorizer.joblib")
+    vectorizer = raw_vect['vectorizer'] if isinstance(raw_vect, dict) else raw_vect
 
     # Load dataset
     df_raw = pd.read_csv(cfg.raw_data_path)    
