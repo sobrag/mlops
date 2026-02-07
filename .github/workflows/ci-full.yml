@@ -70,6 +70,8 @@ jobs:
 
       - name: Smoke drift check (WANDB disabled)
         run: |
+          # Use sample dataset available in the repo as stand-in for WELFake_dataset.csv
+          ln -sf sample_welfake.csv data/WELFake_dataset.csv
           PYTHONPATH=. WANDB_MODE=disabled python -m pipelines.ct_trigger \
             --config configs/ct.yml \
             --incoming data/sample_welfake.csv
