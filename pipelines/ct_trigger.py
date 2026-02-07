@@ -287,7 +287,12 @@ def _resolve_dataset_file(cfg: Config, path_cfg: Dict[str, Path], log_cfg: Dict[
 
 
 def _log_wandb(enabled: bool, log_cfg: Dict[str, Any], report: Dict[str, Any], report_path: Path) -> None:
-    if not enabled:
+    env_use = os.getenv("USE_WANDB")
+    if env_use is not None:
+        enabled = env_use.lower() == "true"
+    wandb_mode = os.getenv("WANDB_MODE", log_cfg.get("wandb_mode", "online")).lower()
+
+    if (not enabled) or wandb_mode == "disabled":
         return
     import wandb
 
