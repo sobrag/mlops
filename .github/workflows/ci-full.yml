@@ -5,6 +5,12 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-full-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 
 jobs:
   full-test:
@@ -16,6 +22,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -51,9 +59,29 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
 
+      - name: Smoke train (small) for drift artifacts
+        run: |
+          PYTHONPATH=. WANDB_MODE=disabled python -m pipelines.train_pipeline --config configs/test.yml --max-rows 200 --run-name ci_smoke
+          latest_run=$(ls -td artifacts/run_* | head -1)
+          mkdir -p artifacts/models
+          ln -sf "../$(basename "$latest_run")" artifacts/models/ci_smoke_latest
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Smoke drift check (WANDB disabled)
+        run: |
+          PYTHONPATH=. WANDB_MODE=disabled python -m pipelines.ct_trigger \
+            --config configs/ct.yml \
+            --incoming data/sample_welfake.csv
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
   docker-build:
     runs-on: ubuntu-latest
     needs: full-test
+
+    env:
+      WANDB_MODE: "disabled"
 
     steps:
       - name: Checkout repository
@@ -62,7 +90,7 @@ jobs:
       - name: Validate docker-compose.yml
         run: |
           docker compose config --quiet
-          echo "✅ docker-compose.yml is valid"
+          echo "docker-compose.yml is valid"
 
       - name: Create dummy artifacts directory
         run: |
@@ -72,7 +100,7 @@ jobs:
       - name: Build API Docker image
         run: |
           docker build -t news-credibility-api:test -f src/app/Dockerfile .
-          echo "✅ Docker image built successfully"
+          echo "Docker image built successfully"
 
       - name: Start services and health check
         run: |
@@ -82,15 +110,15 @@ jobs:
           
           # Health check API
           curl --retry 5 --retry-delay 3 --retry-connrefused -f http://localhost:5001/health || exit 1
-          echo "✅ API health check passed"
+          echo "API health check passed"
           
           # Verify Prometheus is scraping
           curl -f http://localhost:9090/api/v1/targets | grep -q "news_credibility_api" || exit 1
-          echo "✅ Prometheus targets configured"
+          echo "Prometheus targets configured"
           
           # Verify Grafana is running
           curl -f http://localhost:3000/api/health || exit 1
-          echo "✅ Grafana health check passed"
+          echo "Grafana health check passed"
 
       - name: Show container logs on failure
         if: failure()
