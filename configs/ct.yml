@@ -1,0 +1,29 @@
+paths:
+  artifacts_dir: "artifacts/models"  # only model runs (exclude dataset folders)
+  incoming_glob: "data/incoming/*.csv"
+  reference_stats: "artifacts/reference_stats.json"
+  results_dir: "results"
+  raw_data_path: "data/WELFake_dataset.csv"
+
+drift:
+  top_k_tokens: 200
+  psi_buckets: 10
+  psi_threshold: 0.25
+  js_threshold: 0.05
+  max_rows_batch: 5000
+  auto_retrain: false
+  retrain_config: "configs/train.yml"
+
+logging:
+  use_wandb: true
+  wandb_project: "mlops"
+  wandb_entity: null
+  wandb_mode: "offline"
+
+data:
+  dataset_artifact: "welfake_dataset:latest"
+
+split:
+  reference_frac: 0.7
+  drift_start_frac: 0.8
+  drift_end_frac: 1.0
