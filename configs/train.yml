@@ -1,7 +1,10 @@
 model_name: logreg
 
 seed: 42
-test_size: 0.2
+split:
+  train_frac: 0.7
+  val_frac: 0.1  # validation/test for model metrics
+  tail_frac: 0.2 # held-out for drift simulation (not used in training)
 
 title_col: "title"
 text_col: "text"
@@ -29,4 +32,3 @@ logging:
 
 data:
   dataset_artifact: "welfake_dataset:latest"
-

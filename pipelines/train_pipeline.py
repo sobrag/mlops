@@ -66,12 +66,28 @@ def _wandb_init_if_enabled(cfg, run_dir: Path):
     # Environment variable takes precedence over config
     mode = os.getenv("WANDB_MODE") or getattr(cfg, "wandb_mode", None) or "online"
 
+    split_cfg = getattr(cfg, "split", None)
+    split_tag = None
+    if split_cfg and all(k in split_cfg for k in ("train_frac", "val_frac", "tail_frac")):
+        split_tag = f"split_{split_cfg['train_frac']}_{split_cfg['val_frac']}_{split_cfg['tail_frac']}"
+    dataset_tag = None
+    if getattr(cfg, "dataset_artifact", None):
+        dataset_tag = f"dataset:{getattr(cfg, 'dataset_artifact').split(':')[0]}"
+    else:
+        dataset_tag = f"dataset:{Path(cfg.raw_data_path).stem}"
+
+    tags = ["training"]
+    if split_tag:
+        tags.append(split_tag)
+    if dataset_tag:
+        tags.append(dataset_tag)
+
     run = wandb.init(
         project=project,
         entity=entity,
         name=run_dir.name,
         job_type="training",
-        tags=["mlops", "training"],
+        tags=tags,
         mode=mode,
     )
 
@@ -110,26 +126,65 @@ def run_training(cfg: Config, run_dir: Path, *, max_rows: int | None = None) -> 
         if max_rows is not None:
             df_raw = df_raw.head(max_rows).copy()
 
+        # Split config (train/val/tail)
+        split_cfg = getattr(cfg, "split", None)
+
+        # Split: train/val/tail (tail reserved for drift checks, not used here)
+        split_cfg = getattr(cfg, "split", None)
+        if split_cfg and all(k in split_cfg for k in ("train_frac", "val_frac", "tail_frac")):
+            n = len(df_raw)
+            train_end = int(n * split_cfg["train_frac"])
+            val_end = int(n * (split_cfg["train_frac"] + split_cfg["val_frac"]))
+            df_train_raw = df_raw.iloc[:train_end]
+            df_val_raw = df_raw.iloc[train_end:val_end]
+            df_tail_raw = df_raw.iloc[val_end:]
+        else:
+            df_train_raw = df_raw
+            df_val_raw = None
+            df_tail_raw = None
+
         if wb_run is not None:
             wb_run.summary["dataset_path"] = str(dataset_path)
             if getattr(cfg, "dataset_artifact", None):
                 wb_run.summary["dataset_artifact"] = getattr(cfg, "dataset_artifact")
+            wb_run.summary["split"] = {
+                "train_frac": split_cfg.get("train_frac") if split_cfg else None,
+                "val_frac": split_cfg.get("val_frac") if split_cfg else None,
+                "tail_frac": split_cfg.get("tail_frac") if split_cfg else None,
+                "train_rows": len(df_train_raw),
+                "val_rows": len(df_val_raw) if df_val_raw is not None else 0,
+                "tail_rows": len(df_tail_raw) if df_tail_raw is not None else 0,
+            }
 
-        df, metadata = preprocess_pipeline(df_raw)
+        df_train, metadata_train = preprocess_pipeline(df_train_raw)
+        if df_val_raw is not None and len(df_val_raw) > 0:
+            df_val, _ = preprocess_pipeline(df_val_raw)
+        else:
+            df_val = None
+
+        # For reproducibility store train metadata only
+        metadata = metadata_train
         preprocessing_meta_path = run_dir / "preprocessing_metadata.json"
         save_json(metadata, preprocessing_meta_path)
 
         # Force numpy arrays to avoid pandas Arrow dtypes with pyarrow backend
-        X = df[cfg.clean_col].astype(str).to_numpy()
-        y = df[cfg.label_col].astype(int).to_numpy()
+        X_train = df_train[cfg.clean_col].astype(str).to_numpy()
+        y_train = df_train[cfg.label_col].astype(int).to_numpy()
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            X,
-            y,
-            test_size=cfg.test_size,
-            random_state=cfg.seed,
-            stratify=y,
-        )
+        if df_val is not None:
+            X_val = df_val[cfg.clean_col].astype(str).to_numpy()
+            y_val = df_val[cfg.label_col].astype(int).to_numpy()
+        else:
+            # fallback to random split like before
+            X_all = df_train[cfg.clean_col].astype(str).to_numpy()
+            y_all = df_train[cfg.label_col].astype(int).to_numpy()
+            X_train, X_val, y_train, y_val = train_test_split(
+                X_all,
+                y_all,
+                test_size=cfg.test_size,
+                random_state=cfg.seed,
+                stratify=y_all,
+            )
 
         vectorizer = build_vectorizer(
             max_features=cfg.tfidf_max_features,
@@ -137,7 +192,7 @@ def run_training(cfg: Config, run_dir: Path, *, max_rows: int | None = None) -> 
             stop_words=cfg.tfidf_stop_words,
         )
         Xtr = vectorizer.fit_transform(X_train)
-        Xte = vectorizer.transform(X_test)
+        Xte = vectorizer.transform(X_val)
 
         train_cfg = TrainConfig(
             lr_solver=cfg.lr_solver,
@@ -151,7 +206,7 @@ def run_training(cfg: Config, run_dir: Path, *, max_rows: int | None = None) -> 
 
         p_real = predict_proba_real(model, Xte)
         eval_cfg = EvalConfig(threshold=0.5)
-        metrics = evaluate_predictions(y_test, p_real, cfg=eval_cfg)
+        metrics = evaluate_predictions(y_val, p_real, cfg=eval_cfg)
 
         if wb_run is not None:
             wandb.log({f"metrics/{k}": v for k, v in metrics.items()})
@@ -248,7 +303,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # Load config
-    logger.info(f"Loading config from: {args.config}")
+    logger.info(f"Config: {args.config}")
     cfg = Config.from_yaml(args.config)
     
     # Create run directory
@@ -259,40 +314,25 @@ if __name__ == "__main__":
         run_name = f"run_{timestamp}"
     
     run_dir = cfg.artifacts_dir / run_name
-    logger.info(f"Run directory: {run_dir}")
-    
-    # Log configuration
-    logger.info("=" * 60)
-    logger.info("TRAINING CONFIGURATION")
-    logger.info("=" * 60)
-    logger.info(f"Config file: {args.config}")
-    logger.info(f"Dataset path: {cfg.raw_data_path}")
-    logger.info(f"Dataset artifact: {cfg.dataset_artifact}")
-    logger.info(f"Use W&B: {cfg.use_wandb}")
-    logger.info(f"W&B mode: {cfg.wandb_mode}")
-    logger.info(f"Max rows: {args.max_rows or 'all'}")
-    logger.info(f"Seed: {cfg.seed}")
-    logger.info(f"Test size: {cfg.test_size}")
-    logger.info("=" * 60)
+    logger.info(f"Run dir: {run_dir}")
+    split_cfg = getattr(cfg, "split", None)
+    split_msg = (
+        f"split train/val/tail={split_cfg['train_frac']}/{split_cfg['val_frac']}/{split_cfg['tail_frac']}"
+        if split_cfg
+        else f"random split test_size={cfg.test_size}"
+    )
+    logger.info(
+        f"Dataset={cfg.raw_data_path}, artifact={cfg.dataset_artifact}, max_rows={args.max_rows or 'all'}, "
+        f"W&B={cfg.use_wandb} ({cfg.wandb_mode}), {split_msg}"
+    )
     
     # Run training
     try:
-        logger.info("Starting training pipeline...")
+        logger.info("Training start")
         metrics = run_training(cfg, run_dir, max_rows=args.max_rows)
-        
-        # Print results
-        logger.info("=" * 60)
-        logger.info("TRAINING COMPLETED SUCCESSFULLY!")
-        logger.info("=" * 60)
-        logger.info("Final metrics:")
-        for key, value in metrics.items():
-            logger.info(f"  {key}: {value:.4f}")
-        logger.info(f"\nArtifacts saved to: {run_dir}")
-        logger.info("=" * 60)
+        metric_str = ", ".join(f"{k}={v:.4f}" for k, v in metrics.items())
+        logger.info(f"Training done | {metric_str} | artifacts={run_dir}")
         
     except Exception as e:
-        logger.error("=" * 60)
-        logger.error("TRAINING FAILED!")
-        logger.error("=" * 60)
-        logger.error(f"Error: {e}", exc_info=True)
+        logger.error(f"Training failed: {e}", exc_info=True)
         raise
