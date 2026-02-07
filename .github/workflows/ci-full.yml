@@ -41,13 +41,19 @@ jobs:
 
       - name: Run ALL ML pipeline tests
         run: |
-          python -m pytest tests/ -v --ignore=tests/api/
+          python -m pytest tests/ -v --ignore=tests/api/ --ignore=tests/ui/
         env:
           PYTHONPATH: ${{ github.workspace }}
 
       - name: Run ALL API tests
         run: |
           python -m pytest tests/api/ -v --tb=short
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Run ALL UI tests
+        run: |
+          python -m pytest tests/ui/ -v --tb=short
         env:
           PYTHONPATH: ${{ github.workspace }}
 
@@ -72,7 +78,12 @@ jobs:
       - name: Build API Docker image
         run: |
           docker build -t news-credibility-api:test -f src/app/Dockerfile .
-          echo "✅ Docker image built successfully"
+          echo "✅ API Docker image built successfully"
+
+      - name: Build Streamlit Docker image
+        run: |
+          docker build -t streamlit-ui:test -f src/ui/Dockerfile .
+          echo "✅ Streamlit Docker image built successfully"
 
       - name: Start services and health check
         run: |
@@ -91,6 +102,10 @@ jobs:
           # Verify Grafana is running
           curl -f http://localhost:3000/api/health || exit 1
           echo "✅ Grafana health check passed"
+
+          # Verify Streamlit is running
+          curl --retry 5 --retry-delay 3 --retry-connrefused -f http://localhost:8501/_stcore/health || exit 1
+          echo "✅ Streamlit health check passed"
 
       - name: Show container logs on failure
         if: failure()
