@@ -158,9 +158,9 @@ def run_training(cfg: Config, run_dir: Path, *, max_rows: int | None = None) -> 
 
         df_train, metadata_train = preprocess_pipeline(df_train_raw)
         if df_val_raw is not None and len(df_val_raw) > 0:
-            df_val, metadata_val = preprocess_pipeline(df_val_raw)
+            df_val, _ = preprocess_pipeline(df_val_raw)
         else:
-            df_val, metadata_val = None, None
+            df_val = None
 
         # For reproducibility store train metadata only
         metadata = metadata_train
