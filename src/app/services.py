@@ -2,11 +2,11 @@
 Model service for loading and inference.
 """
 from __future__ import annotations
+import os
 from pathlib import Path
 from typing import Optional
-from src.features.vectorize import TextVectorizer
 from src.models.predict import predict_all
-from src.utils.io import load_joblib
+from src.utils.artifacts import resolve_model_dir, load_model_bundle
 
 DEFAULT_ARTIFACTS_PATH = Path(__file__).parent.parent.parent / "artifacts"
 
@@ -20,25 +20,17 @@ class ModelService:
         self._loaded = False
     
     def load(self) -> bool:
-        """Load model and vectorizer from artifacts."""
+        """Load model and vectorizer; prefer local cache, fallback to W&B artifact if configured."""
         try:
-            artifact_dirs = sorted(
-                [d for d in self.artifacts_path.iterdir() if d.is_dir()],
-                reverse=True
+            model_dir = resolve_model_dir(
+                artifacts_dir=self.artifacts_path,
+                model_artifact=os.getenv("MODEL_ARTIFACT"),
+                use_wandb=os.getenv("USE_WANDB", "false").lower() == "true",
+                wandb_mode=os.getenv("WANDB_MODE", "online"),
+                project=os.getenv("WANDB_PROJECT") or "mlops",
+                entity=os.getenv("WANDB_ENTITY"),
             )
-            
-            if not artifact_dirs:
-                return False
-            
-            latest_dir = artifact_dirs[0]
-            model_path = latest_dir / "model.joblib"
-            vectorizer_path = latest_dir / "vectorizer.joblib"
-            
-            if not model_path.exists() or not vectorizer_path.exists():
-                return False
-            
-            self.model = load_joblib(model_path)
-            self.vectorizer = TextVectorizer.load(vectorizer_path)
+            self.vectorizer, self.model = load_model_bundle(model_dir)
             self._loaded = True
             return True
         except Exception:

@@ -21,12 +21,12 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from pipelines.inference_pipeline import _latest_run_dir, _load_artifacts
 from src.config import Config
 from src.data.load_data import load_csv
 from src.data.preprocess import clean_text
 from src.models.predict import predict_proba_real
 from src.utils.io import ensure_dir, save_json
+from src.utils.artifacts import resolve_model_dir, load_model_bundle
 
 
 logger = logging.getLogger(__name__)
@@ -281,11 +281,18 @@ def _resolve_dataset_file(cfg: Config, path_cfg: Dict[str, Path], log_cfg: Dict[
     )
 
 
+
+
 # W&B logging
 
 
 def _log_wandb(enabled: bool, log_cfg: Dict[str, Any], report: Dict[str, Any], report_path: Path) -> None:
-    if not enabled:
+    env_use = os.getenv("USE_WANDB")
+    if env_use is not None:
+        enabled = env_use.lower() == "true"
+    wandb_mode = os.getenv("WANDB_MODE", log_cfg.get("wandb_mode", "online")).lower()
+
+    if (not enabled) or wandb_mode == "disabled":
         return
     import wandb
 
@@ -376,9 +383,20 @@ def main(args: argparse.Namespace) -> None:
     dataset_path = _resolve_dataset_file(cfg, path_cfg, log_cfg)
     df_all = load_csv(dataset_path)
 
-    # Load reference stats or build them
-    run_dir = _latest_run_dir(path_cfg["artifacts_dir"])
-    vectorizer, model = _load_artifacts(run_dir)
+    # Load artifacts: prefer local run dir, fallback to W&B model artifact
+    try:
+        run_dir = resolve_model_dir(
+            artifacts_dir=path_cfg["artifacts_dir"],
+            model_artifact=getattr(cfg, "model_artifact", None),
+            use_wandb=bool(log_cfg.get("use_wandb", False)),
+            wandb_mode=log_cfg.get("wandb_mode", os.getenv("WANDB_MODE", "online")),
+            project=log_cfg.get("wandb_project", None) or os.getenv("WANDB_PROJECT") or "mlops",
+            entity=log_cfg.get("wandb_entity", None) or os.getenv("WANDB_ENTITY") or None,
+        )
+        vectorizer, model = load_model_bundle(run_dir)
+    except FileNotFoundError as e:
+        logger.error(f"No model artifacts available: {e}")
+        raise
 
     ref_stats_path = path_cfg["reference_stats"]
     if ref_stats_path.exists():

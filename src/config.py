@@ -61,6 +61,9 @@ class Config:
     # Input data
     raw_data_path: Path = project_root / "data" / "sample_welfake.csv"
 
+    # Model artifact (optional, W&B alias e.g., "model:production")
+    model_artifact: Optional[str] = None
+
     # Outputs
     results_dir: Path = project_root / "results"
     artifacts_dir: Path = project_root / "artifacts"

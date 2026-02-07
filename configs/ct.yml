@@ -18,7 +18,9 @@ logging:
   use_wandb: true
   wandb_project: "mlops"
   wandb_entity: null
-  wandb_mode: "offline"
+  wandb_mode: "disabled"
+
+model_artifact: "credibility_model_bundle:production"
 
 data:
   dataset_artifact: "welfake_dataset:latest"

@@ -6,41 +6,62 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+import os
 
 from src.config import Config
 from src.data.load_data import load_csv
 from src.data.preprocess import clean_text, preprocess_pipeline
-from src.features.vectorize import TextVectorizer
 from src.models.evaluate import EvalConfig, evaluate_predictions
 from src.models.predict import predict_all
-from src.utils.io import ensure_dir, load_joblib, save_json
+from src.utils.artifacts import resolve_model_dir, load_model_bundle
+from src.utils.io import ensure_dir, save_json
 
 
 logger = logging.getLogger(__name__)
 
 
-def _latest_run_dir(artifacts_dir: Path) -> Path:
-    """Pick the most recent artifacts run folder."""
-    runs = sorted([d for d in artifacts_dir.iterdir() if d.is_dir()], reverse=True)
-    if not runs:
-        raise FileNotFoundError(f"No artifact runs found in {artifacts_dir}")
-    return runs[0]
+def _resolve_model(cfg: Config):
+    model_dir = resolve_model_dir(
+        artifacts_dir=cfg.artifacts_dir,
+        model_artifact=getattr(cfg, "model_artifact", None),
+        use_wandb=bool(getattr(cfg, "use_wandb", False)),
+        wandb_mode=os.getenv("WANDB_MODE") or getattr(cfg, "wandb_mode", None) or "online",
+        project=getattr(cfg, "wandb_project", None) or os.getenv("WANDB_PROJECT") or "mlops",
+        entity=getattr(cfg, "wandb_entity", None) or os.getenv("WANDB_ENTITY") or None,
+    )
+    vectorizer, model = load_model_bundle(model_dir)
+    return model_dir, vectorizer, model
 
 
-def _load_artifacts(run_dir: Path):
-    """Load vectorizer and model from a run directory."""
-    vec_path = run_dir / "vectorizer.joblib"
-    model_path = run_dir / "model.joblib"
+def _download_model_artifact(cfg: Config) -> Path:
+    """Download model artifact from W&B if configured."""
+    if not cfg.model_artifact:
+        raise FileNotFoundError("No model_artifact configured")
+    if not bool(getattr(cfg, "use_wandb", False)):
+        raise FileNotFoundError("W&B disabled, cannot download model artifact")
 
-    if not vec_path.exists() or not model_path.exists():
-        raise FileNotFoundError(
-            f"Artifacts not found in {run_dir}. "
-            f"Expected {vec_path.name} and {model_path.name}"
-        )
+    mode = os.getenv("WANDB_MODE") or getattr(cfg, "wandb_mode", None) or "online"
+    if mode == "offline":
+        raise FileNotFoundError("WANDB_MODE=offline, cannot download model artifact")
 
-    vectorizer = TextVectorizer.load(vec_path)
-    model = load_joblib(model_path)
-    return vectorizer, model
+    project = getattr(cfg, "wandb_project", None) or os.getenv("WANDB_PROJECT") or "mlops"
+    entity = getattr(cfg, "wandb_entity", None) or os.getenv("WANDB_ENTITY") or None
+
+    import wandb
+
+    run = wandb.init(
+        project=project,
+        entity=entity,
+        job_type="model-download",
+        mode=mode,
+        name=f"download_{cfg.model_artifact}",
+    )
+    art = run.use_artifact(cfg.model_artifact)
+    dest = Path(cfg.artifacts_dir) / "_downloaded" / art.name.replace(":", "_")
+    dest.mkdir(parents=True, exist_ok=True)
+    art.download(root=str(dest))
+    run.finish()
+    return dest
 
 
 def _preprocess_for_inference(df_raw: pd.DataFrame, cfg: Config):
@@ -94,11 +115,8 @@ def run_inference(
     """Load artifacts, preprocess data, run predictions, and persist outputs/metrics."""
     ensure_dir(output_dir)
 
-    # Load artifacts
-    run_dir = run_dir or _latest_run_dir(cfg.artifacts_dir)
-    logger.info(f"Using artifacts from: {run_dir}")  
-    vectorizer, model = _load_artifacts(run_dir)
-    logger.info("Model and vectorizer loaded successfully")
+    model_dir, vectorizer, model = _resolve_model(cfg)
+    logger.info(f"Model artifacts loaded from: {model_dir}")
 
     # Load input
     if not input_path.exists():
@@ -229,12 +247,9 @@ if __name__ == "__main__":
     logger.info(f"Loading config from: {args.config}")
     cfg = Config.from_yaml(args.config)
 
-    # Determine run directories
-    if args.run_dir:
-        run_dir = Path(args.run_dir)
-    else:
-        run_dir = _latest_run_dir(cfg.artifacts_dir)
-    
+    # run_dir is optional; resolver will handle local/W&B
+    run_dir = Path(args.run_dir) if args.run_dir else None
+
     if args.output_dir:
         output_dir = Path(args.output_dir)
     else:
@@ -246,7 +261,7 @@ if __name__ == "__main__":
     logger.info("=" * 60)
     logger.info(f"Config file: {args.config}")
     logger.info(f"Input file: {args.input}")
-    logger.info(f"Model directory: {run_dir}")
+    logger.info(f"Model source: {run_dir or 'auto-resolve (local or W&B artifact)'}")
     logger.info(f"Output directory: {output_dir}")
     logger.info(f"Max rows: {args.max_rows or 'all'}")
     logger.info(f"Threshold: {args.threshold}")

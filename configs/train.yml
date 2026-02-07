@@ -32,3 +32,6 @@ logging:
 
 data:
   dataset_artifact: "welfake_dataset:latest"
+
+# Preferred model artifact alias when pulling from W&B (optional)
+model_artifact: "credibility_model_bundle:production"

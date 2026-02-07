@@ -72,14 +72,16 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
 
       - name: Smoke drift check (WANDB disabled)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          WANDB_MODE: "disabled"
+          USE_WANDB: "false"
         run: |
           # Use sample dataset available in the repo as stand-in for WELFake_dataset.csv
           ln -sf sample_welfake.csv data/WELFake_dataset.csv
-          PYTHONPATH=. WANDB_MODE=disabled python -m pipelines.ct_trigger \
+          PYTHONPATH=. python -m pipelines.ct_trigger \
             --config configs/ct.yml \
             --incoming data/sample_welfake.csv
-        env:
-          PYTHONPATH: ${{ github.workspace }}
 
   docker-build:
     runs-on: ubuntu-latest
