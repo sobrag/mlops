@@ -11,8 +11,12 @@ services:
     environment:
       - FLASK_ENV=production
       - PYTHONUNBUFFERED=1
+      - USE_WANDB=true
+      - WANDB_API_KEY=${WANDB_API_KEY}
+      - MODEL_ARTIFACT=credibility_model_bundle:production
+      - WANDB_PROJECT=mlops
     volumes:
-      - ./artifacts:/app/artifacts:ro
+      - ./artifacts:/app/artifacts
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
       interval: 30s

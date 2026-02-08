@@ -10,7 +10,7 @@ from sklearn.base import BaseEstimator
 def predict_proba_real(
     model: BaseEstimator,
     X: csr_matrix,
-    positive_label_index: int = 1,
+    positive_label_index: int = 0,
 ) -> np.ndarray:
     """
     Predict probability of the positive (\"real\") class.
@@ -19,6 +19,7 @@ def predict_proba_real(
         model: fitted sklearn classifier with predict_proba
         X: vectorized input texts
         positive_label_index: index of the \"real\" class in predict_proba output
+                              (WELFake dataset: 0=real, 1=fake)
 
     Returns:
         Array of probabilities P(y = real | x)
@@ -41,8 +42,7 @@ def predict_credibility_score(
     The score is defined as:
         credibility_score = P(real | x) * scale
 
-    Note: we assume label 1 = 'real', label 0 = 'fake'. 
-    If your labels are reversed, change positive_label_index accordingly.
+    Note: WELFake dataset uses label 0 = 'real', label 1 = 'fake'.
     
     Args:
         model: fitted (ideally calibrated) classifier
