@@ -85,7 +85,6 @@ class Config:
         paths = data.pop("paths", {}) or {}
         logging_cfg = data.pop("logging", {}) or {}
         data_cfg = data.pop("data", {}) or {}
-        data_cfg = data.pop("data", {}) or {}
 
         cfg = base
 
