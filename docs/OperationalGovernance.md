@@ -4,16 +4,19 @@
 
 **Version:** 2.0
 **Last updated:** 2026‑02‑08
-**Status:** Living document – aligned with the current implemented system
-**Authors:** Sofia Bragagnolo, Ester De Giosa, Alina Fogar, Riccardo Samaritan
+
+**Team:**
+- **Sofia Bragagnolo** – Project Manager  
+- **Ester De Giosa** – Data Scientist  
+- **Alina Fogar** – MLOps Engineer  
+- **Riccardo Samaritan** – Software Developer  
 
 ---
 
-## Index
-
+## Table of Contents
 - [Operational Governance \& Versioning Document](#operational-governance--versioning-document)
   - [News Credibility Estimation](#news-credibility-estimation)
-  - [Index](#index)
+  - [Table of Contents](#table-of-contents)
   - [Purpose and Scope](#purpose-and-scope)
   - [Version Control Strategy](#version-control-strategy)
     - [System and Platform](#system-and-platform)
@@ -33,8 +36,9 @@
     - [Drift Detection](#drift-detection)
     - [Incident Response](#incident-response)
     - [Monitoring Stack](#monitoring-stack)
+      - [Components](#components)
+      - [Metrics Collected](#metrics-collected)
     - [Docker setup](#docker-setup)
-    - [Testing strategy](#testing-strategy)
   - [Runtime and Environment Governance](#runtime-and-environment-governance)
   - [Containerization Policy](#containerization-policy)
   - [Inference Interface and API Governance](#inference-interface-and-api-governance)
@@ -44,20 +48,28 @@
 
 ## Purpose and Scope
 
-This document defines how the project governs the **end‑to‑end lifecycle of the machine learning system** in production. It focuses on practices that are already implemented in the repository and infrastructure, covering:
+This document defines the **end‑to‑end operational governance** of the News Credibility Estimation system, covering how we manage the complete ML lifecycle from development through production deployment. 
 
-* Versioning of **code, data, and models**
-* **CI/CD automation** and quality gates
+It establishes practices and procedures that ensure:
+
+* **Reproducibility**: Every experiment, training run, and deployment can be exactly replicated.
+* **Traceability**: Full audit trail from code commits to model predictions.
+* **Reliability**: Controlled changes, automated testing, and monitoring prevent production incidents.
+
+The governance model focuses on these pillars:
+
+* Versioning of **artifacts** (code, data, and models) to track changes and ensure reproducibility.
+* **CI/CD automation** and quality gates.
 * **Model lifecycle governance**, including reproducibility and experiment tracking
-* **Monitoring, drift detection, and incident response**
-
-The objective is to ensure reproducibility, controlled evolution of the system, and operational reliability, without introducing assumptions or mechanisms that are not currently in place.
+* **Monitoring, drift detection, and incident response** to maintain system health.
 
 ---
 
 ## Version Control Strategy
 
 Version control is a core governance mechanism for this project, as it defines how changes are proposed, reviewed, validated, and integrated across the system lifecycle.
+
+We adopted a **trunk-based development** model with feature branches to balance collaboration speed with stability.
 
 ### System and Platform
 
@@ -71,12 +83,13 @@ Version control is a core governance mechanism for this project, as it defines h
 
 * **`main`**: release‑ready branch. All changes are merged via pull requests after passing CI checks.
 * **`feature/<topic>`**: short‑lived branches used for incremental development and experimentation.
-* **`api`** (legacy): contains a dedicated workflow (`ci-api.yml`) and is only used if explicitly recreated. 
-* **`mlops/infrastructure`**: used to stage CI/CD setup, versioning choices, W&B integration, pipelines, and drift-detection scaffolding before merging to `main`.
+* **`api`**: contains a dedicated workflow (`ci-api.yml`) and is only used if explicitly recreated. 
+* **`mlops/infrastructure`**: used to stage CI/CD setup, versioning choices, W&B integration, pipelines, and drift-detection scaffolding.
+* **`mlops/streamlit-ui`**: used to stage Streamlit UI development.
 
-When needed, we open focused topic branches for infrastructure or UI work, following the same PR + CI requirements.
+When needed, we opened focused topic branches for infrastructure or UI work, following the same PR + CI requirements.
 
-This strategy enforces controlled integration while allowing parallel development.
+This strategy enforces controlled integration while allowing parallel development, and avoids team members stepping on each other's work or bottlenecks in the development process.
 
 ### Code Versioning
 
@@ -85,16 +98,50 @@ All changes to `main` are gated by CI checks, including linting and automated te
 
 ### Model Versioning
 
-Each training run produces a self-contained directory under `artifacts/run_<timestamp>/`.
+Git is designed for text files, not large binary models. Committing model weights (50+ MB) bloats repository history.
 
-Stored artifacts include:
-- configuration files
-- vectorizers
-- trained models
-- evaluation metrics
-- drift reference statistics
+To solve this problem, we separated model artifacts from code and use a structured artifact management for versioning. Models are stored as files under `artifacts/` and tracked via **Weights & Biases Artifacts** when enabled.
 
-No local ‘active model’ symlink is maintained; model resolution is configuration-driven (W&B alias) or auto-resolved from the latest local artifacts directory.
+Each training run produces a **model bundle** containing:
+
+```
+artifacts/run_20260209_143052/
+├── model.pkl              # Trained Logistic Regression (joblib)
+├── vectorizer.pkl         # Fitted TF-IDF vectorizer (joblib)
+├── config.yml             # Training configuration (hyperparams, data splits)
+├── metrics.json           # Evaluation results (accuracy, F1, etc.)
+└── training_log.txt       # Training process logs
+```
+
+No local ‘active model’ symlink is maintained; model resolution is configuration-driven (**W&B** alias) or auto-resolved from the latest local artifacts directory.
+
+**Versioning strategy**:
+
+1. **Local Storage**:
+   - Every training run saves artifacts to `artifacts/run_<timestamp>/`
+   - `.gitignore` excludes `artifacts/` directory (not committed to Git)
+   - Developers maintain local history for recent experiments
+
+2. **Weights & Biases Artifacts**:
+   - Each training run logs artifacts to W&B with unique version
+   - Artifact name: `credibility_model_bundle`
+   - Version format: `v<sequential_number>` (auto-incremented)
+   - Hash: SHA-256 checksum for integrity verification
+
+3. **Aliases** (Model Promotion):
+   - `latest`: Most recent training run (moving pointer)
+   - `run/<run_id>`: Immutable pointer to specific W&B run
+   - `staging`: Candidate for production (set manually)
+   - `production`: Currently deployed model (set manually)
+
+**Example W&B Artifact Timeline**:
+
+| Version | Alias | Accuracy | Timestamp | Status |
+|---------|-------|----------|-----------|--------|
+| v1 | | 0.905 | 2025-12-15 | Archived |
+| v2 | | 0.918 | 2025-12-20 | Archived |
+| v3 | staging | 0.923 | 2026-01-10 | Candidate |
+| v4 | latest, production | 0.925 | 2026-02-05 | Deployed |
 
 ### Data Versioning
 
@@ -231,30 +278,38 @@ preprocessing steps, or thresholds when necessary.
 
 ### Monitoring Stack
 
-* **Prometheus** and **Grafana** are included via `docker-compose.yml` with default provisioning.
-* Service availability is verified in CI using HTTP checks.
-* Logging:
+#### Components
 
-  * Structured Python logs from pipelines
-  * Container logs via `docker compose logs`
-* Custom application‑level Prometheus metrics are not yet implemented.
+1. **Prometheus**: Metrics collection and storage
+2. **Grafana**: Visualization and alerting
+3. **Flask Prometheus Exporter**: Instrument API
+
+Both Prometheus and Grafana are included in the `docker-compose.yml` stack with default provisioning. The API is instrumented to expose metrics at `/metrics` using the Flask Prometheus Exporter.
+
+#### Metrics Collected
+
+**System Metrics**:
+| Metric | Type | Description |
+|--------|------|-------------|
+| `flask_http_request_total` | Counter | Total API requests (by endpoint, status) |
+| `flask_http_request_duration_seconds` | Histogram | Request latency distribution (p50, p95, p99) |
+| `flask_http_request_exceptions_total` | Counter | Exception count by type |
+
+**Model Metrics**:
+| Metric | Type | Description |
+|--------|------|-------------|
+| `drift_is_drifted` | Gauge | Binary flag: 0 (no drift), 1 (drift detected) |
+| `drift_sample_count` | Gauge | Number of predictions in drift detection window |
+| `drift_prediction_mean_shift` | Gauge | Shift in average credibility score |
+| `drift_text_length_shift` | Gauge | Shift in average input text length |
+
+System metrics are collected continuously while the API is running, while model metrics are updated after every prediction.
 
 ### Docker setup
 
 * Local bring‑up: `docker compose up -d` (API, Streamlit, Prometheus, Grafana).
 * Tear‑down: `docker compose down -v`.
 * Prereqs: model artifacts present under `artifacts/` (or mounted), dataset in `data/WELFake_dataset.csv`, and default ports 5001/8501/9090/3000 available.
-
-### Testing strategy
-
-* **Test runner**: `pytest`.
-* **Suites**:
-  * Core pipeline tests under `tests/` (data/preprocess/model logic).
-  * API tests under `tests/api/`.
-  * UI tests under `tests/ui/`.
-* **Commands**:
-  * All tests: `python -m pytest tests/ -v --ignore=tests/api/ --ignore=tests/ui/` (core); `python -m pytest tests/api/ -v --tb=short`; `python -m pytest tests/ui/ -v --tb=short`.
-* **CI**: executes the three suites plus lint (`ruff check .`) in `.github/workflows/ci-full.yml`.
 
 ---
 
