@@ -48,7 +48,7 @@ class ModelService:
         return {
             "credibility_score": float(score[0]),
             "probability": float(proba[0]),
-            "label": "real" if label[0] == 1 else "fake"
+            "label": "real" if label[0] == 0 else "fake"
         }
     
     def predict_batch(self, texts: list[str]) -> list[dict]:
@@ -60,7 +60,7 @@ class ModelService:
             {
                 "credibility_score": float(scores[i]),
                 "probability": float(proba[i]),
-                "label": "real" if labels[i] == 1 else "fake"
+                "label": "real" if labels[i] == 0 else "fake"
             }
             for i in range(len(texts))
         ]

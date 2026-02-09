@@ -48,7 +48,7 @@ def evaluate_predictions(
 
     Args:
         y_true: true labels (0/1)
-        p_real: predicted probabilities for class 1 ("real")
+        p_real: predicted probabilities for class 0 ("real")
         cfg: evaluation config (threshold, eps)
 
     Returns:
@@ -63,7 +63,7 @@ def evaluate_predictions(
     p_clip = np.clip(p_real, cfg.eps, 1.0 - cfg.eps)
 
     # Hard predictions for threshold-based metrics
-    y_pred = (p_real >= cfg.threshold).astype(int)
+    y_pred = (p_real < cfg.threshold).astype(int)
 
     metrics: Dict[str, float] = {
         "threshold": float(cfg.threshold),

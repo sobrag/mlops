@@ -76,10 +76,10 @@ def predict_label(
         threshold: decision threshold on P(real)
 
     Returns:
-        Array of predicted labels (0/1)
+        Array of predicted labels (0=real, 1=fake)
     """
     p_real = predict_proba_real(model, X)
-    return (p_real >= threshold).astype(int)
+    return (p_real < threshold).astype(int)
 
 
 def predict_all(
@@ -96,5 +96,5 @@ def predict_all(
     """
     p_real = predict_proba_real(model, X)
     scores = p_real * scale
-    labels = (p_real >= threshold).astype(int)
+    labels = (p_real < threshold).astype(int)
     return p_real, scores, labels
