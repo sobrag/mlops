@@ -1,11 +1,46 @@
-# Operational Governance & Versioning
+# Operational Governance & Versioning Document
 
-**Project:** News Credibility Estimation
+## News Credibility Estimation
+
 **Version:** 2.0
 **Last updated:** 2026‑02‑08
 **Status:** Living document – aligned with the current implemented system
 **Authors:** Sofia Bragagnolo, Ester De Giosa, Alina Fogar, Riccardo Samaritan
+
 ---
+
+## Index
+
+- [Operational Governance \& Versioning Document](#operational-governance--versioning-document)
+  - [News Credibility Estimation](#news-credibility-estimation)
+  - [Index](#index)
+  - [Purpose and Scope](#purpose-and-scope)
+  - [Version Control Strategy](#version-control-strategy)
+    - [System and Platform](#system-and-platform)
+    - [Branching Model](#branching-model)
+    - [Code Versioning](#code-versioning)
+    - [Model Versioning](#model-versioning)
+    - [Data Versioning](#data-versioning)
+  - [CI/CD and Automation](#cicd-and-automation)
+    - [Continuous Integration](#continuous-integration)
+    - [Quality Gates](#quality-gates)
+    - [Deployment](#deployment)
+  - [Model Lifecycle Governance](#model-lifecycle-governance)
+    - [Model Registry](#model-registry)
+    - [Reproducibility](#reproducibility)
+    - [Experiment Tracking](#experiment-tracking)
+  - [Monitoring and Maintenance](#monitoring-and-maintenance)
+    - [Drift Detection](#drift-detection)
+    - [Incident Response](#incident-response)
+    - [Monitoring Stack](#monitoring-stack)
+    - [Docker setup](#docker-setup)
+    - [Testing strategy](#testing-strategy)
+  - [Runtime and Environment Governance](#runtime-and-environment-governance)
+  - [Containerization Policy](#containerization-policy)
+  - [Inference Interface and API Governance](#inference-interface-and-api-governance)
+  - [Configuration Governance](#configuration-governance)
+  - [Scope and Limitations](#scope-and-limitations)
+  - [Closing Notes](#closing-notes)
 
 ## Purpose and Scope
 
@@ -22,13 +57,22 @@ The objective is to ensure reproducibility, controlled evolution of the system, 
 
 ## Version Control Strategy
 
+Version control is a core governance mechanism for this project, as it defines how changes are proposed, reviewed, validated, and integrated across the system lifecycle.
+
+### System and Platform
+
+| Aspect | Details |
+| --- | --- |
+| Version Control System | Git |
+| Hosting Platform | GitHub |
+| Repository | [https://github.com/sobrag/mlops](https://github.com/sobrag/mlops) |
+
 ### Branching Model
 
 * **`main`**: release‑ready branch. All changes are merged via pull requests after passing CI checks.
 * **`feature/<topic>`**: short‑lived branches used for incremental development and experimentation.
 * **`api`** (legacy): contains a dedicated workflow (`ci-api.yml`) and is only used if explicitly recreated. 
 * **`mlops/infrastructure`**: used to stage CI/CD setup, versioning choices, W&B integration, pipelines, and drift-detection scaffolding before merging to `main`.
-* feat/ds 
 
 When needed, we open focused topic branches for infrastructure or UI work, following the same PR + CI requirements.
 
@@ -50,15 +94,17 @@ Stored artifacts include:
 - evaluation metrics
 - drift reference statistics
 
-A global “active model” pointer or symlink is not maintained; model selection is explicit via configuration.
-
+No local ‘active model’ symlink is maintained; model resolution is configuration-driven (W&B alias) or auto-resolved from the latest local artifacts directory.
 
 ### Data Versioning
 
-Datasets are **not versioned directly in Git**. The source of truth depends on the execution mode:
+Datasets are handled with a split strategy to balance reproducibility and repository size. The source of truth depends on the execution mode:
 
 * **With W&B enabled** (`use_wandb: true`): datasets are tracked as **W&B Artifacts**, each with a unique version and immutable hash. Pipelines always reference the exact artifact version used during training or evaluation, ensuring full reproducibility.
-* **Without W&B** (`use_wandb: false` or offline mode): datasets are loaded from local files under `data/` (e.g. `data/train.csv`, `data/sample_welfake.csv`). These files are **not versioned in Git** and are intended only for local development, testing, or debugging. Reproducibility in this case is limited to the local environment.
+* **Without W&B** (`use_wandb: false` or offline mode): datasets are loaded from local files under `data/` (e.g. `data/sample_welfake.csv`, `data/synthetic_inference_sample.csv`, incoming batches under `data/incoming/`).
+
+  * Small, curated **sample datasets are committed to Git** to support local development and CI reproducibility.
+  * The full WELFake dataset is **not committed to Git**; it is expected to be provided locally (e.g. `data/WELFake_dataset.csv`) or via W&B Artifacts when enabled.
 
 This separation avoids committing large or sensitive datasets to the repository, while still allowing reproducible experiments when artifact tracking is enabled.
 
@@ -78,30 +124,21 @@ This separation avoids committing large or sensitive datasets to the repository,
 
 ### Quality Gates
 
-* **Static analysis**: `ruff check .`
-* **Testing**: full `pytest` suite (core logic, API, UI)
-* Any failure blocks merging into `main`.
+All checks below are implemented in `.github/workflows/ci-full.yml`. A failure in any check blocks merging into `main`.
 
-### Training and Drift Smoke Tests
+| Check | What it runs | Purpose |
+| --- | --- | --- |
+| Lint | `ruff check .` | Enforce style and catch static issues |
+| Tests (core ML) | `python -m pytest tests/ -v --ignore=tests/api/ --ignore=tests/ui/` | Validate preprocessing, training utilities, artifact I/O |
+| Tests (API) | `python -m pytest tests/api/ -v --tb=short` | Validate Flask endpoints and service integration (mock/real artifacts) |
+| Tests (UI) | `python -m pytest tests/ui/ -v --tb=short` | Validate Streamlit client logic and response handling |
+| Smoke train | `python -m pipelines.train_pipeline --config configs/test.yml --max-rows 200` | Ensure training pipeline executes end-to-end and produces artifacts |
+| Smoke drift | `python -m pipelines.ct_trigger --config configs/ct.yml --incoming data/sample_welfake.csv` (W&B disabled) | Ensure drift pipeline executes and writes a report |
+| Docker compose validation | `docker compose config --quiet` | Validate `docker-compose.yml` is syntactically correct |
+| Docker image builds | `docker build` for API and Streamlit | Ensure Dockerfiles build |
+| Compose bring-up + health | `docker compose up -d` + `curl` checks | Verify services start and key endpoints respond |
+| Cleanup | `docker compose down -v` | Ensure CI job is self-cleaning |
 
-* **Training smoke test**:
-
-  * Executes `pipelines.train_pipeline` with `configs/test.yml`.
-  * Verifies that training, serialization, and artifact generation complete successfully.
-  * Output is symlinked to `artifacts/models/ci_smoke_latest` for inspection.
-* **Drift smoke test**:
-
-  * Runs `pipelines.ct_trigger` on sample data.
-  * Ensures that drift detection logic and reporting paths remain functional.
-
-### Containerization Checks
-
-* Docker images are built for:
-
-  * Inference API (`src/app/Dockerfile`)
-  * Streamlit UI (`src/ui/Dockerfile`)
-* `docker-compose.yml` is validated in CI.
-* Basic health checks are executed for API, Prometheus, Grafana, and Streamlit services.
 
 ### Deployment
 
@@ -121,7 +158,7 @@ This separation avoids committing large or sensitive datasets to the repository,
 
   * Either a local artifact directory under `artifacts/`, or
   * A W&B artifact specified via configuration (`model_artifact`).
-* ****Aliases****: each training run logs aliases `latest` (moving) and `run/<run_id>` (immutable); promotion aliases like `staging` or `production` can be set via `scripts/promote_model.py`.
+  * ****Aliases****: each training run logs alias `latest` (moving) and a run-specific immutable alias (pattern depends on the pipeline implementation). Promotion aliases like `staging` or `production` are set manually in W&B when used.
 
 ### Reproducibility
 
@@ -179,12 +216,15 @@ This separation avoids committing large or sensitive datasets to the repository,
   * Controlled by `auto_retrain` flag (default: `false`).
   * When enabled, retraining is triggered using `retrain_config`.
 
-### Incident Response | Trigger | Action | Outcome |
-|-------|--------|---------|
+### Incident Response
+
+| Trigger | Action | Outcome |
+| --- | --- | --- |
 | CI failure | Inspect logs, fix code or configuration, re-run pipeline | Restored passing CI |
 | Drift alert | Analyze `drift_report.json`, assess feature shifts, decide on retraining | Updated or confirmed model |
 | Service outage | Restart docker-compose stack, verify `/health`, inspect container logs | Service availability restored |
 | Quality regression | Re-evaluate on held-out data and compare with previous metrics | Decision to rollback or retrain |
+
 
 **Post-incident actions** include documenting the root cause and updating configuration,
 preprocessing steps, or thresholds when necessary.
