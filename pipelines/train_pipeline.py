@@ -197,6 +197,7 @@ def run_training(cfg: Config, run_dir: Path, *, max_rows: int | None = None) -> 
         train_cfg = TrainConfig(
             lr_solver=cfg.lr_solver,
             lr_max_iter=cfg.lr_max_iter,
+            lr_C=cfg.lr_C,
             random_state=cfg.seed,
         )
         base_model = train_model(cfg.model_name, Xtr, y_train, cfg=train_cfg)
@@ -258,7 +259,11 @@ def run_training(cfg: Config, run_dir: Path, *, max_rows: int | None = None) -> 
             art.add_file(str(run_config_path))
             art.add_file(str(preprocessing_meta_path))
 
-            wb_run.log_artifact(art, aliases=["latest", run_dir.name])
+            # Aliases:
+            # - latest: moving pointer to most recent training run
+            # - run/<run_id>: immutable reference to this specific run
+            # Additional aliases (staging/production) can be set via scripts/promote_model.py
+            wb_run.log_artifact(art, aliases=["latest", f"run/{run_dir.name}"])
 
         return metrics
 

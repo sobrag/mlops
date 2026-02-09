@@ -107,12 +107,12 @@ jobs:
       - name: Build API Docker image
         run: |
           docker build -t news-credibility-api:test -f src/app/Dockerfile .
-          echo "✅ API Docker image built successfully"
+          echo "API Docker image built successfully"
 
       - name: Build Streamlit Docker image
         run: |
           docker build -t streamlit-ui:test -f src/ui/Dockerfile .
-          echo "✅ Streamlit Docker image built successfully"
+          echo "Streamlit Docker image built successfully"
           echo "Docker image built successfully"
 
       - name: Start services and health check
@@ -135,7 +135,7 @@ jobs:
 
           # Verify Streamlit is running
           curl --retry 5 --retry-delay 3 --retry-connrefused -f http://localhost:8501/_stcore/health || exit 1
-          echo "✅ Streamlit health check passed"
+          echo "Streamlit health check passed"
 
       - name: Show container logs on failure
         if: failure()
