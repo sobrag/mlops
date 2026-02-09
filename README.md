@@ -150,3 +150,10 @@ mlops/
 ## Dataset
 
 The model is trained on the [WELFake dataset](https://www.kaggle.com/datasets/saurabhshahane/fake-news-classification), which contains ~72,000 news articles labeled as real (0) or fake (1).
+
+## Authors
+
+* [Sofia Bragagnolo](https://github.com/sobrag)
+* [Ester De Giosa](https://github.com/esterdegiosa03)
+* [Alina Fogar](https://github.com/alinafogar)
+* [Riccardo Samaritan](https://github.com/RiccardoSamaritan)
