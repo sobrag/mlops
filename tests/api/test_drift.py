@@ -1,7 +1,6 @@
 """
 Tests for drift monitoring API endpoints.
 """
-import pytest
 
 
 class TestDriftStatusEndpoint:
