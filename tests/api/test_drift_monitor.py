@@ -1,7 +1,6 @@
 """
 Unit tests for the DriftMonitor class.
 """
-import pytest
 import time
 
 from src.app.drift_monitor import DriftMonitor, PredictionRecord, DriftMetrics

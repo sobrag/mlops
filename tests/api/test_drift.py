@@ -86,7 +86,6 @@ class TestDriftIntegration:
         
         # Check sample count increased
         response = client.get('/drift/status')
-        data = response.get_json()
         
         # Note: In testing mode with MockModelService, predictions may not be recorded
         # This test validates the endpoint integration works
