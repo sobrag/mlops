@@ -261,9 +261,9 @@ def run_training(cfg: Config, run_dir: Path, *, max_rows: int | None = None) -> 
 
             # Aliases:
             # - latest: moving pointer to most recent training run
-            # - run/<run_id>: immutable reference to this specific run
+            # - run_<run_id>: immutable reference to this specific run
             # Additional aliases (staging/production) can be set via scripts/promote_model.py
-            wb_run.log_artifact(art, aliases=["latest", f"run/{run_dir.name}"])
+            wb_run.log_artifact(art, aliases=["latest", f"run_{run_dir.name}"])
 
         return metrics
 
