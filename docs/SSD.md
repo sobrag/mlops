@@ -40,16 +40,18 @@ This project focuses on the technical feasibility and lifecycle management of su
 The system uses the WELFake dataset, a publicly available dataset containing news articles labeled as real or fake. WELFake is a dataset of 72,134 news articles with 35,028 real and 37,106 fake news. 
 Each instance includes:
 
-| title: headline of the article | text: full article body | label: binary label (0 = fake, 1 = real) |
+| Title: headline of the article | Content: full article body | Label: binary label (0 = fake, 1 = real) |
 |--------------------------------|-------------------------|------------------------------------------|
 
 Example:
-| Lithuania gets minority government as junior partner leaves                  | VILNIUS (Reuters) - Lithuania s government lost its majority in parliament on Saturday after its jun... | 0 |
-|------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|---|
-| COLLEGE REPUBLICANS PRESIDENT Attacked by Antifa : “Like a pack of wolves”   | So much for trying to come together like the left always says they think we should do It was a brave... | 1 |
-| For Helping Immigrants, Chobani’s Founder Draws Threats - The New York Times | By many measures, Chobani embodies the classic American immigrant success story. Its founder, Hamdi ... | 0 |
 
+| Title                                                                 | Content                                                                                              | Label |
+|------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|-----------|
+| Lithuania gets minority government as junior partner leaves            | VILNIUS (Reuters) - Lithuania’s government lost its majority in parliament on Saturday after its jun...   | 0         |
+| COLLEGE REPUBLICANS PRESIDENT Attacked by Antifa: “Like a pack of wolves” | So much for trying to come together like the left always says they think we should do. It was a brave... | 1         |
+| For Helping Immigrants, Chobani’s Founder Draws Threats - The New York Times | By many measures, Chobani embodies the classic American immigrant success story. Its founder... | 0
 ...
+
 
 ### Model
 The machine learning component is formulated as a supervised text classification problem.

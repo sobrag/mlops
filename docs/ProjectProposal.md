@@ -98,12 +98,11 @@ It includes the following components:
 - Configurable feature extraction: Support for tunable parameters such as vocabulary size, n-gram ranges, stopword handling, and frequency thresholds, enabling controlled experimentation.
 - Model training framework: Implementation of multiple supervised learning models (Logistic Regression, Support Vector Machines, Random Forest) to establish transparent and computationally efficient baselines.
   
-  * Baselines: Logistic Regression, Support Vector Machines (SVM), and Random Forest.
-  * Ensemble Methods: VotingClassifier to combine multiple model predictions.
-  * Advanced Model: BERT, transformer-based model(BertForSequenceClassification) for deep linguistic understanding. BERT is included as an optional advanced baseline for comparison, but is not strictly required for deployment (due to its higher computational and operational complexity).
+  * Baselines implemented in the codebase: Logistic Regression, Support Vector Machines (SVC), and Random Forest.
+  * The codebase is intentionally extensible: ensemble methods or transformer-based models can be added later without changing the surrounding pipeline interfaces.
 
 - Probability calibration module: Post-training calibration of classifier outputs (e.g., Platt scaling or isotonic regression) to ensure that predicted probabilities are well-aligned with empirical frequencies
-- Credibility score computation: Transformation of calibrated probabilities into a continuous credibility score (e.g., scaled to a [0,100] range), enabling nuanced interpretation beyond binary classification. The system uses precision_recall_fscore_support and roc_curve to analyze the binary classification outputs before converting them into a continuous credibility score.
+- Credibility score computation: Transformation of calibrated probabilities into a continuous credibility score (e.g., scaled to a [0,100] range), enabling nuanced interpretation beyond binary classification.
 - Evaluation utilities: Computation of both classification metrics (accuracy, precision, recall, F1-score) and probability-quality metrics (ROC-AUC, Brier score, log loss, calibration error).
 - Model and artifact persistence: Serialization and versioning of trained models and vectorizers to guarantee reproducibility and compatibility between offline training and online inference.
 
@@ -131,7 +130,7 @@ Monitoring focuses on three levels:
 
 3) Model outputs: The system continuously monitors model predictions (e.g., distribution of credibility scores) to observe changes in behavior that may not be immediately visible from input data alone. Shifts in these metrics can indicate concept drift.
 
-Drift detection is implemented using statistical comparison between reference data (training or validation sets) and incoming or simulated time-based data. Because the dataset is static, drift is simulated using time-based or stratified splits that emulate temporal evolution in news content. 
+Drift detection is implemented using statistical comparison between reference data (e.g., a reference split) and incoming (or simulated) batches. Because the dataset is static, drift is simulated via reference/tail splits and/or curated incoming batches that emulate distributional shifts. 
 
 When drift is detected, the system does not automatically retrain the model. Instead, detected drift events trigger alerts and inform retraining decisions.
 
@@ -218,6 +217,10 @@ Collaboration, version control, and experiment tracking tools were initialized d
 * Definition of the data processing pipeline
 * Setup of project structure and documentation
 * Setup of Docker environment and basic infrastructure
+* Definition of a modular repository structure (`src/`, `pipelines/`, `tests/`, `configs/`, `docs/`)
+* Centralized configuration management through `src/config.py` with YAML-based overrides
+* Externalized experiment and pipeline configuration through versioned YAML files (`configs/*.yml`)
+* Deterministic training settings with fixed seeds and controlled split parameters
 
 
 **Deliverables:**
@@ -239,6 +242,10 @@ Collaboration, version control, and experiment tracking tools were initialized d
 * Credibility score definition and calibration
 * Implementation of Mock API
 * Implementation of initial/prototype Grafana dashboards
+* Integration of CI quality gates with automated linting (Ruff) and test execution (ML, API, UI)
+* CI smoke training run to validate training pipeline execution in automation
+* Initial artifact versioning based on run directories (`artifacts/run_<timestamp>`)
+* Validation of model/vectorizer/metrics persistence and reloadability through automated tests
 
 **Deliverables:**
 * Trained baseline credibility model
@@ -255,6 +262,8 @@ Collaboration, version control, and experiment tracking tools were initialized d
 * Model deployment setup
 * Automation of the training and inference pipeline
 * End-to-end system testing
+* Standardized per-run artifact bundle generation (model, vectorizer, metrics, run config, preprocessing metadata)
+* Optional W&B integration for run configuration logging, metric tracking, and artifact publishing
   
 **Deliverables:**
 * End-to-end executable system
@@ -267,7 +276,7 @@ Collaboration, version control, and experiment tracking tools were initialized d
 ### **Sprint 4 – Monitoring and Drift Detection**
 * Definition of monitoring metrics for inputs and predictions
 * Implementation of drift detection algorithms
-* Simulation of data drift using time-based splits
+* Simulation of data drift using reference/tail splits and incoming batches
 * Monitoring of system behavior over simulated time
 * Validation and interpretation of drift detection results
 
@@ -307,11 +316,11 @@ Collaboration, version control, and experiment tracking tools were initialized d
 
 - **Programming Language:** Python 3.12
 - **ML & Data Libraries:** 
-  - **Data Handling**: pandas, numpy, datasets (Hugging Face)
-  - **Visualization**: matplotlib, seaborn, wordcloud
+  - **Data Handling**: pandas, numpy, scipy
+  - **Visualization (optional, notebooks only)**: matplotlib, seaborn
   - **Preprocessing**: re (Regular Expressions), TfidfVectorizer
-  - **Classical ML (Scikit-learn):** LogisticRegression, SVC, LinearSVC, RandomForestClassifier, MLPClassifier, KMeans, VotingClassifier
-  - **Deep Learning & NLP:** torch (PyTorch), transformers (BERT Tokenizer and Sequence Classification)
+  - **Classical ML (Scikit-learn):** LogisticRegression, SVC, RandomForestClassifier, CalibratedClassifierCV
+  - **NLP (baseline)**: NLTK
 - **MLOps Tools:** Git, CI/CD pipelines, monitoring frameworks 
 - **Resources:** 
 - **Infrastructure & Monitoring:** 
