@@ -232,3 +232,4 @@ data/*
 wandb/
 .wandb/
 
+.env

@@ -57,6 +57,13 @@ To address the dynamic nature of news content, since language and writing styles
    ```
 
 2. **Set up W&B credentials** (to download the production model)
+   
+   Create a `.env` file in the project root:
+   ```bash
+   echo "WANDB_API_KEY=your_api_key_here" > .env
+   ```
+   
+   Or export the variable (non-persistent):
    ```bash
    export WANDB_API_KEY=your_api_key_here
    ```
