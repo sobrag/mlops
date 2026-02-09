@@ -45,18 +45,32 @@ class ModelService:
         X = self.vectorizer.transform([text])
         proba, score, label = predict_all(self.model, X)
         
-        return {
+        result = {
             "credibility_score": float(score[0]),
             "probability": float(proba[0]),
             "label": "real" if label[0] == 0 else "fake"
         }
+        
+        # Record for drift monitoring
+        try:
+            from src.app.drift_monitor import get_drift_monitor
+            monitor = get_drift_monitor()
+            monitor.record_prediction(
+                probability=result["probability"],
+                text=text,
+                label=result["label"],
+            )
+        except Exception:
+            pass  # Don't fail prediction if drift monitoring fails
+        
+        return result
     
     def predict_batch(self, texts: list[str]) -> list[dict]:
         """Make predictions for multiple texts."""
         X = self.vectorizer.transform(texts)
         proba, scores, labels = predict_all(self.model, X)
         
-        return [
+        results = [
             {
                 "credibility_score": float(scores[i]),
                 "probability": float(proba[i]),
@@ -64,6 +78,21 @@ class ModelService:
             }
             for i in range(len(texts))
         ]
+        
+        # Record for drift monitoring
+        try:
+            from src.app.drift_monitor import get_drift_monitor
+            monitor = get_drift_monitor()
+            for i, text in enumerate(texts):
+                monitor.record_prediction(
+                    probability=results[i]["probability"],
+                    text=text,
+                    label=results[i]["label"],
+                )
+        except Exception:
+            pass  # Don't fail prediction if drift monitoring fails
+        
+        return results
 
 
 class MockModelService:

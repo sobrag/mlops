@@ -95,3 +95,46 @@ def predict_batch():
         return jsonify({"predictions": predictions})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# Drift monitoring endpoints
+drift_bp = Blueprint('drift', __name__)
+
+
+@drift_bp.route('/drift/status', methods=['GET'])
+def drift_status():
+    """
+    Get current drift monitoring status.
+    
+    Response: {
+        "is_drifted": false,
+        "sample_count": 150,
+        "metrics": {...},
+        "details": {...}
+    }
+    """
+    from src.app.drift_monitor import get_drift_monitor
+    
+    try:
+        monitor = get_drift_monitor()
+        status = monitor.get_status()
+        return jsonify(status)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@drift_bp.route('/drift/reset', methods=['POST'])
+def drift_reset():
+    """
+    Reset drift monitoring window.
+    
+    Response: {"status": "reset", "message": "Drift window cleared"}
+    """
+    from src.app.drift_monitor import get_drift_monitor
+    
+    try:
+        monitor = get_drift_monitor()
+        monitor.reset()
+        return jsonify({"status": "reset", "message": "Drift window cleared"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
