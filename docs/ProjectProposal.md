@@ -62,11 +62,11 @@
 The goal of this project is the design and implementation of a **complete end-to-end MLOps system** for estimating the credibility of news articles based on textual content.  
 Rather than focusing exclusively on model accuracy, the project emphasizes the entire machine learning lifecycle, including data ingestion, preprocessing, model training, evaluation, deployment, monitoring, and maintenance.
 
-Our system treats credibility as a **continuous scale** rather than a simple "true or false" classification. The system outputs a **credibility score**, representing the degree of reliability of a news article based on its textual characteristics. This score is derived from calibrated probabilities corresponding to the likelihood of an article being real (label 0), ensuring interpretability and consistency across the pipeline.
+Our system treats credibility as a **continuous scale** rather than a simple "true or false" classification. The system outputs a **credibility score**, representing the degree of reliability of a news article based on its textual characteristics.
 
 An important aspect is the management of **changes over time**, addressing data drift and model performance degradation caused by the evolution of language, different topics, and writing styles in news content.
 
-We do not handle real-world moderation actions (e.g., content removal) or direct integration with external social media platforms. The project remains a demonstrative but **production-inspired MLOps implementation**, showcasing reproducible pipelines, automated workflows, and monitoring best practices.
+We do not handle real-world moderation actions (e.g., content removal) or direct integration with external social media platforms. The project remains a demonstrative but **production-inspired MLOps implementation**, showcasing reproducible pipelines, automated workflows and monitoring best practices.
 
 ---
 
@@ -86,9 +86,9 @@ Specific objectives include:
 ---
 
 ### Relevance
-The project tackles the problem of misinformation and unreliable news, demonstrating how machine learning systems can support users in assessing the credibility of online content. From an academic perspective, it highlights the practical application of modern MLOps principles - including automation, monitoring, versioning, and lifecycle management - in a realistic NLP scenario.
+The project tackles the problem of misinformation and unreliable news, demonstrating how machine learning systems can support users in assessing the credibility of online content. From an academic perspective, it highlights the practical application of modern MLOps principles including automation, monitoring, versioning, and lifecycle management.x
 
-By treating credibility as a **continuous score** rather than a binary label, the system provides nuanced insights into content reliability, while offering a structured framework for reproducible, production-inspired ML pipelines.
+By treating credibility as a **continuous score** rather than a binary label, the system provides insights into content reliability, while offering a structured framework for reproducible, production-inspired ML pipelines.
 
 ---
 
@@ -97,7 +97,7 @@ By treating credibility as a **continuous score** rather than a binary label, th
 Each deliverable is designed to be independently testable, versioned and integrable into an end-to-end workflow. 
 
 ### Data Pipeline
-The Data Pipeline deliverable provides a **robust and reproducible workflow** for validating, and preparing textual data for downstream machine learning tasks. It is implemented as a **modular Python pipeline** with explicit error handling, logging, and metadata generation.
+The Data Pipeline deliverable provides a **robust and reproducible workflow** for validating and preparing textual data for downstream machine learning tasks. It is implemented as a **modular Python pipeline** with explicit error handling, logging, and metadata generation.
 
 Key components include:
 
@@ -115,17 +115,17 @@ The ML Kernel encapsulates the core feature extraction, training, evaluation, an
 It includes the following components:
 - **Text vectorization module**: A lightweight, MLOps-oriented TF-IDF wrapper that couples vectorizer configuration with its fitted state, enabling consistent reuse during both training and inference.
 - **Configurable feature extraction**: Support for tunable parameters such as vocabulary size, n-gram ranges, stopword handling, and frequency thresholds, enabling controlled experimentation.
-- **Model training framework**: Implementation of multiple supervised learning models, including Logistic Regression, Random Forest, and Support Vector Machines (SVC).
+- **Model training framework**: Implementation of multiple supervised learning models, including Logistic Regression, Random Forest, and Support Vector Machines (SVM).
   
-  * Baselines implemented in the codebase: Logistic Regression, Random Forest, and Support Vector Machines (SVC).
+  * Baselines implemented in the codebase: Logistic Regression, Random Forest and SVM.
   * The codebase is intentionally extensible: ensemble methods or transformer-based models can be added later without changing the surrounding pipeline interfaces.
 
 - **Probability calibration module**: Post-training calibration of classifier outputs (e.g., Platt scaling or isotonic regression) to ensure that predicted probabilities are well-aligned with empirical frequencies
-- **Credibility score computation**: Transformation of calibrated probabilities into a credibility score, enabling nuanced interpretation beyond binary classification. The credibility score is scaled to a [0,100] range.
+- **Credibility score computation**: Transformation of calibrated probabilities into a credibility score, enabling interpretation beyond binary classification. The credibility score is scaled to a [0,100] range.
 - **Evaluation utilities**: Computation of both classification metrics (accuracy, precision, recall, F1-score) and probability-quality metrics (ROC-AUC, Brier score, log loss, calibration error).
 - **Model and artifact persistence**: Serialization and versioning of trained models and vectorizers to guarantee reproducibility and compatibility between offline training and online inference.
 
-Credibility estimation is modeled as a binary supervised classification problem, where **calibrated posterior probabilities** for the *Real News Class* are subsequently transformed into a continuous credibility score for interpretability. The resulting credibility score should therefore be interpreted as a **model-based confidence measure**, rather than an absolute or objective ground truth.
+Credibility estimation is modeled as a binary supervised classification problem, where **calibrated posterior probabilities** for the *Real News Class* are subsequently transformed into a continuous credibility score for interpretability. The resulting score should therefore be interpreted as a **model-based confidence measure**, rather than an absolute or objective ground truth.
 
 The ML Kernel is intentionally model-agnostic, allowing future extensions to ensemble methods or transformer-based architectures without requiring changes to the surrounding pipeline.
 
@@ -137,17 +137,17 @@ The pipeline also ensures versioning and traceability of datasets, preprocessing
 Although simplified for an academic context, this pipeline reflects real-world CI/CD principles as applied to machine learning systems.
 
 ### Monitoring and Drift Detection
-The Monitoring and Drift Detection deliverable provides continuous observability over the deployed credibility estimation system, ensuring that both system behavior and model outputs remain reliable over time.
+The Monitoring and Drift Detection deliverable provides continuous observability over the deployed credibility estimation system, ensuring that both system behaviour and model outputs remain reliable over time.
 Monitoring focuses on three levels:
 1) System-level metrics: 
    - API request latency and throughput
    - Error rates and failed inference requests
 
-    These metrics are collected using Prometheus and visualized in Grafana dashboards, enabling early detection of degradation or anomalous runtime behavior.
+    These metrics are collected using Prometheus and visualized in Grafana dashboards, enabling early detection of degradation or anomalous runtime behaviour.
 
 2) Input data characteristics: To detect changes in the nature of incoming news articles, the system monitors statistical properties of the input text. Significant deviations may indicate data drift, caused by changes in topics, writing style, or language usage over time.
 
-3) Model outputs: The system continuously monitors model predictions (e.g., distribution of credibility scores) to observe changes in behavior that may not be immediately visible from input data alone. Shifts in these metrics can indicate concept drift.
+3) Model outputs: The system continuously monitors model predictions to observe changes in behaviour that may not be immediately visible from input data alone. Shifts in these metrics can indicate concept drift.
 
 Drift detection is implemented using statistical comparison between reference data and incoming (or simulated) batches. Because the dataset is static, drift is simulated via reference/tail splits and/or curated incoming batches that emulate distributional shifts. 
 
@@ -173,7 +173,7 @@ The Work Breakdown Structure decomposes the project scope into manageable compon
 
 ### 1. Project Management and Infrastructure 
 - Team communication and Agile coordination via Slack
-- Definition of Requirements and project scope
+- Definition of requirements and project scope
 - Specification of objectives and success criteria
 - Sprint planning and management artifacts
 - Project repository setup and documentation structure on GitHub
@@ -183,7 +183,7 @@ The Work Breakdown Structure decomposes the project scope into manageable compon
 - Acquisition of WELFake dataset
 - Data understanding, exploration analysis, and statistical profiling
 - Assessment of data quality (missing values, duplicates, noise)
-- Development of txt preprocessing pipeline (cleaning, normalization)
+- Development of text preprocessing pipeline (cleaning, normalization)
 - Feature engineering
 - Dataset splitting (train/validation/test) and versioning
 
@@ -197,7 +197,7 @@ The Work Breakdown Structure decomposes the project scope into manageable compon
 ### 4. API, Deployment and System Integration
 - Development of a mock API (Flask) 
 - Integration of trained ML model into API (replace mock with real Model)
-- Definition of input/output interfaces (API and optional UI)
+- Definition of input/output interfaces (API and UI)
 - Automation of training and inference pipelines
 - End-to-end system testing for correctness and reproducibility
 
@@ -294,7 +294,7 @@ Collaboration, version control, and experiment tracking tools were initialized d
 * Definition of monitoring metrics for input data and model predictions
 * Implementation of data drift detection mechanisms
 * Simulation of data drift using reference and tail data splits, as well as incoming data batches
-* Monitoring of system behavior over simulated time
+* Monitoring of system behaviour over simulated time
 * Validation and interpretation of drift detection results
 
 **Deliverables:**
@@ -321,35 +321,35 @@ Collaboration, version control, and experiment tracking tools were initialized d
 
 ## DEFINITION OF READY (DoR)
 
-A task can be defined as **Ready** if the objective and expected outcome are clearly defined, accepted, and agreed upon by the team, and if it is clearly assigned to one or more team members.
+A task can be defined as **Ready** if the objective and expected outcome are defined, accepted, and agreed upon by the team, and if it is assigned to one or more team members.
 
 Acceptance criteria must be specified and aligned with the project’s Definition of Done and dependencies on previous tasks or deliverables must be identified and resolved.
 
 Only Ready items may be pulled into an active sprint.
 
 ### Sprint 1
-- Team roles and responsibilities are clearly assigned.
-- The dataset source (WELFake) is accessible and verified.
+- Team roles and responsibilities are assigned.
+- The dataset source (WELFake) is accessible and verified
 - Python environment is configured with all required libraries.
 - Preprocessing scripts for text cleaning and normalization are available.
-- The scope of data exploration and preprocessing is clearly defined.
+- The scope of data exploration and preprocessing is defined.
 - Expected outputs of the data pipeline are specified.
-- Infrastructure requirements (Docker setup, repository structure) are agreed upon
+- Infrastructure requirements (Docker setup, repository structure) are agreed upon.
 
 
 ### Sprint 2 
-- Cleaned and versioned datasets from Sprint 1 are available
-- Feature representation strategy (e.g., TF-IDF) is agreed upon
-- Baseline mo.del candidates are selected
-- Evaluation .metrics and validation strategy are defined
-- Moc clearlyk infere.nceRequirements of mrequirements 
-API - Monitoring .goals for the objectivestype stage are defined
+- Cleaned and versioned datasets from Sprint 1 are available.
+- Feature representation strategy (TF-IDF) is agreed upon.
+- Baseline model candidates are selected
+- Evaluation metrics and validation strategy are defined
+- Mock inference API requirements are specified
+- Monitoring goals for the prototype stage are defined
 
 
 ### Sprint 3
 - A trained and validated model is available.
 - Preprocessing pipeline is finalized, deterministic, and reproducible.
-- API input/output contracts are clearly defined.
+- API input/output contracts are defined.
 - Monitoring metrics to be exposed by the production API are identified.
 - User Interface scope and interaction flow are agreed upon.
 - Deployment and execution environments are available and accessible.
@@ -359,8 +359,8 @@ API - Monitoring .goals for the objectivestype stage are defined
 
 ### Sprint 4
 - Monitoring infrastructure is operational.
-- Logged data for inputs and model predictions is available and accessibile for analysis.
-- Drift definitions (criteria for detecting data or concept drift) are clearly specified.
+- Logged data for inputs and model predictions is available and accessible for analysis.
+- Drift definitions (criteria for detecting data or concept drift) are specified.
 - Drift detection methods and thresholds are selected.
 - Strategy for simulating drift scenarios (e.g., reference/tail splits, batch injections) is defined.
 - CI/CD workflow on `main` branch is configured to run linting, automated tests, and ML smoke checks.
@@ -370,10 +370,10 @@ API - Monitoring .goals for the objectivestype stage are defined
 
 ### Sprint 5
 - Drift signals or simulated drift scenarios are available
-- Retraining an dmodel update strategies are clearly defined and documented.
+- Retraining and model update strategies are defined and documented.
 - Evaluation protocol for comparing updated models is agreed upon
 - Documentation structure and final report outline are prepared and accessible.
-- Final delivery requirements,a cceptance criteria, and submission guidelines are clearly understood by the team.
+- Final delivery requirements, acceptance criteria, and submission guidelines are clearly understood by the team.
 
 ---
 
@@ -382,7 +382,6 @@ A task or sprint is considered **Done** when all its objectives and acceptance c
 The Definition of Done ensures that deliverables are complete, reproducible, and ready for integration or deployment.
 
 ### Sprint 1
-Sprint 1 is considered complete when the following conditions are met:
 
 - The WELFake dataset is correctly loaded, cleaned, and documented.
 - Relevant columns (title, text, label) are selected and merged into a unified textual representation.
@@ -390,24 +389,21 @@ Sprint 1 is considered complete when the following conditions are met:
 - Dataset splits (train/validation/test) are reproducible and controlled via configuration.
 - Data preparation code is modular, readable, and reusable.
 - Dataset assumptions, limitations, and potential biases are explicitly documented.
-- A Docker-based development environment is configured and executable(`docker-compose.yml`).
+- A Docker-based development environment is configured and executable (`docker-compose.yml`).
 - A clear and consistent project folder structure for code, data, documentation, and monitoring is established.
 
 ### Sprint 2
-Sprint 2 is considered complete when the following conditions are met:
-
 - A baseline credibility model is trained and evaluated.
 - Multiple models are implemented and compared, with one selected as the final one.
 - Hyperparameter tuning is performed for selected models.
-- Model evaluation includes both classification metrics (Accuracy, Precision, Recall, F1) and probability-based analysis (RO.C-AUC and calibration where applicable)
-- A credibility score is clearly defined and derived from model outputs.
+- Model evaluation includes both classification metrics (Accuracy, Precision, Recall, F1) and probability-based analysis (ROC-AUC and calibration where applicable)
+- A credibility score is defined and derived from model outputs.
 - The system can ingest a news article (title and text) and return a credibility score.
 - A mock inference API (Flask) is implemented to simulate production inference flow.
 - A basic monitoring stack (Prometheus and Grafana) is deployed and collects metrics from the Mock API.
 - The model architecture, training procedure, and key hyperparameters are documented.
 
 ### Sprint 3
-Sprint 3 is considered complete when the following conditions are met:
 
 - The real trained model is integrated into the Flask API (replacing the Mock).
 - Vectorizer, model, and calibration artifacts are correctly loaded and used.
@@ -420,15 +416,14 @@ Sprint 3 is considered complete when the following conditions are met:
 - A reusable inference pipeline supports batch scoring from CSV and persists predictions + summary outputs.
 
 ### Sprint 4
-Sprint 4 is considered complete when the following conditions are met:
 
-- Monitoring metrics for system behavior, input data, and model outputs are defined and implemented.
+- Monitoring metrics for system behaviour, input data, and model outputs are defined and implemented.
 - A drift detection method (statistical or simulated) is implemented and tested.
 - Drift thresholds are defined and used to flag potential drift events.
-- Drift behavior is validated using simulated or time-based data splits.
+- Drift behaviour is validated using simulated or time-based data splits.
 - The trained model and preprocessing pipeline are versioned and deployable.
 - A basic retraining or update workflow is defined and executable following drift detection.
-- The system architecture and ML lifecycle workflow are clearly documented.
+- The system architecture and ML lifecycle workflow are documented.
 - Sprint outcomes are summarized and evaluated against monitoring objectives.
 - CI/CD on main automatically runs linting, unit tests, and smoke ML checks (training and drift-related checks).
 - CI validates containerization by building images and running Docker Compose health checks.
@@ -436,14 +431,13 @@ Sprint 4 is considered complete when the following conditions are met:
 
 
 ### Sprint 5
-Sprint 5 is considered complete when the following conditions are met:
 
 - A model adaptation strategy is defined and executed in response to detected or simulated drift.
 - Model retraining or update is performed using newly available data or time-based data splits.
 - The updated model: 
   * maintains or improves performance on reference data
   * continues to satisfy the functional requirements of the system
-- Retraining decisions (when and why the model is updated) are clearly justified and documented.
+- Retraining decisions (when and why the model is updated) are justified and documented.
 - The complete ML lifecycle (train → deploy → monitor → detect drift → update) is described and validated.
 - The final system is evaluated against the initial project objectives.
 - System limitations, assumptions, and potential future improvements are explicitly stated.
@@ -472,7 +466,7 @@ The successful implementation of the proposed system relies on a combination of 
 | Programming Language | Python 3.12 | Language for data processing, ML, and dashboards development |
 | Data Handling | pandas, numpy, scipy | Efficient manipulation and computation on datasets |
 | Text Preprocessing | re (Regular Expressions), TfidfVectorizer | Cleaning, normalizing, and converting text to numerical features |
-| Classical ML | LogisticRegression, SVC, RandomForestClassifier, CalibratedClassifierCV | Supervised learning models for news credibility classification |
+| Classical ML | LogisticRegression, SVM, RandomForestClassifier, CalibratedClassifierCV | Supervised learning models for news credibility classification |
 | NLP (baseline) | NLTK | Tokenization, stopword removal, and other NLP preprocessing tasks |
 | Visualization | matplotlib, seaborn | Exploratory data analysis and result visualization |
 | Version Control | Git | Source code management, collaboration, and reproducibility |
@@ -482,7 +476,7 @@ The successful implementation of the proposed system relies on a combination of 
 
 | Task |  Services | Purpose |
 |----------|-----------------|--------|
-| Containerization | Docker, Docker Compose | Consistent packaging and deployment of sall ystem components |
+| Containerization | Docker, Docker Compose | Consistent packaging and deployment of all system components |
 | Inference API | Flask | Provides RESTful endpoints for model predictions |
 | Experiment Tracking | Weights & Biases (W&B) | Tracks experiments, hyperparameters, metrics, and model artifacts across training and validation |
 | Metrics Collection | Prometheus | Collects system and model performance metrics |

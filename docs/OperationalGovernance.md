@@ -24,7 +24,7 @@
     - [Code Versioning](#code-versioning)
     - [Model Versioning](#model-versioning)
     - [Data Versioning](#data-versioning)
-  - [Team Communication & Notifications](#team-communication--notifications)
+    - [Slack Integrations](#slack-integrations)
   - [CI/CD and Automation](#cicd-and-automation)
     - [Continuous Integration](#continuous-integration)
     - [Quality Gates](#quality-gates)
@@ -37,6 +37,8 @@
     - [Drift Detection](#drift-detection)
     - [Incident Response](#incident-response)
     - [Monitoring Stack](#monitoring-stack)
+      - [Components](#components)
+      - [Metrics Collected](#metrics-collected)
     - [Docker setup](#docker-setup)
   - [Runtime and Environment Governance](#runtime-and-environment-governance)
   - [Containerization Policy](#containerization-policy)
@@ -236,7 +238,7 @@ All checks below are implemented in `.github/workflows/ci-full.yml`. A failure i
 
   * Either a local artifact directory under `artifacts/`, or
   * A W&B artifact specified via configuration (`model_artifact`).
-  * ****Aliases****: each training run logs alias `latest` (moving) and a run-specific immutable alias (pattern depends on the pipeline implementation). Promotion aliases like `staging` or `production` are set manually in W&B when used.
+  * **Aliases**: each training run logs alias `latest` (moving) and a run-specific immutable alias (pattern depends on the pipeline implementation). Promotion aliases like `staging` or `production` are set manually in W&B when used.
 
 ### Reproducibility
 

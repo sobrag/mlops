@@ -4,8 +4,6 @@
 
 **System Version:** 2.0
 
-**Last updated:** 2026‑02‑09
-
 **Team:**
 - **Sofia Bragagnolo** – Project Manager  
 - **Ester De Giosa** – Data Scientist  
@@ -15,33 +13,50 @@
 ---
 
 ## TABLE OF CONTENTS
-- [Business Problem](#business-problem)
-- [Definitions, Acronyms, and Abbreviations](#definitions-acronyms-and-abbreviations)
-- [Machine Learning Problem Formulation](#machine-learning-problem-formulation)
-  - [Input Dataset](#input-dataset)
-  - [Model](#model)
-  - [Output](#output)
-- [Key Performance Indicators (KPIs)](#key-performance-indicators-kpis)
-- [Data Specification](#data-specification)
-  - [Data Sources](#data-sources)
-  - [Data Flow](#data-flow)
-  - [Data Quality](#data-quality)
-  - [Data Preprocessing](#data-preprocessing)
-- [Functional Requirements](#functional-requirements)
-- [Non-functional Requirements](#non-functional-requirements)
-- [Project Architecture](#project-architecture)
-  - [Training](#training)
-  - [Validation](#validation)
-  - [Deployment](#deployment)
-  - [Monitoring](#monitoring)
-- [Technology Selection Justification](#technology-selection-justification)
-- [Risk Analysis](#risk-analysis)
+- [System Specification Document (SSD)](#system-specification-document-ssd)
+  - [News Credibility Estimation](#news-credibility-estimation)
+  - [TABLE OF CONTENTS](#table-of-contents)
+  - [Business Problem](#business-problem)
+  - [Definitions, Acronyms, and Abbreviations](#definitions-acronyms-and-abbreviations)
+  - [Machine Learning Problem Formulation](#machine-learning-problem-formulation)
+    - [Input Dataset](#input-dataset)
+    - [Model](#model)
+    - [Output](#output)
+  - [Key Performance Indicators (KPIs)](#key-performance-indicators-kpis)
+  - [Data Specification](#data-specification)
+    - [Data Sources](#data-sources)
+    - [Data Flow](#data-flow)
+    - [Data Quality](#data-quality)
+    - [Data Preprocessing](#data-preprocessing)
+  - [Functional Requirements](#functional-requirements)
+    - [FR-1: Data Management](#fr-1-data-management)
+    - [FR-2: Model Training](#fr-2-model-training)
+    - [FR-3: Model Inference](#fr-3-model-inference)
+    - [FR-4: User Interface](#fr-4-user-interface)
+    - [FR-5: Monitoring and Drift Detection](#fr-5-monitoring-and-drift-detection)
+    - [FR-6: Model Retraining](#fr-6-model-retraining)
+  - [Non-functional Requirements](#non-functional-requirements)
+    - [NFR-1: Performance](#nfr-1-performance)
+    - [NFR-2: Reliability](#nfr-2-reliability)
+    - [NFR-4: Reproducibility](#nfr-4-reproducibility)
+    - [NFR-5: Maintainability](#nfr-5-maintainability)
+    - [NFR-7: Observability](#nfr-7-observability)
+  - [Project Architecture](#project-architecture)
+    - [Training](#training)
+    - [Validation](#validation)
+    - [Deployment](#deployment)
+    - [Monitoring](#monitoring)
+  - [Technology Selection Justification](#technology-selection-justification)
+    - [Why Flask for API Framework?](#why-flask-for-api-framework)
+    - [Why Prometheus + Grafana for Monitoring?](#why-prometheus--grafana-for-monitoring)
+    - [Why Weights \& Biases for Experiment Tracking?](#why-weights--biases-for-experiment-tracking)
+  - [Risk Analysis](#risk-analysis)
 
 ## Business Problem
 
 The diffusion of fake news represents a major societal challenge. Online platforms, news aggregators, and end users are increasingly exposed to unreliable or misleading information, making it difficult to assess the credibility of news.
 
-From a business standpoint, such a system could support content moderation pipelines for social media platforms, browser extensions, or APIs that provide credibility feedback to end users, as well as internal quality checks (e.g., content quality scoring and ranking support) for news aggregators. Rather than attempting binary classification (which can be too rigid and prone to false positives), the system provides a nuanced credibility score that helps users make informed decisions about the reliability of content they encounter.
+From a business standpoint, such a system could support content moderation pipelines for social media platforms, browser extensions, or APIs that provide credibility feedback to end users, as well as internal quality checks (e.g., content quality scoring and ranking support) for news aggregators.
 
 This project focuses on the technical feasibility and lifecycle management of such a system rather than on direct commercial deployment.
 
@@ -87,7 +102,7 @@ Example rows from the dataset:
 |------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|-----------|
 | Lithuania gets minority government as junior partner leaves            | VILNIUS (Reuters) - Lithuania’s government lost its majority in parliament on Saturday after its jun...   | 0         |
 | COLLEGE REPUBLICANS PRESIDENT Attacked by Antifa: “Like a pack of wolves” | So much for trying to come together like the left always says they think we should do. It was a brave... | 1         |
-| For Helping Immigrants, Chobani’s Founder Draws Threats - The New York Times | By many measures, Chobani embodies the classic American immigrant success story. Its founder... | 0
+| For Helping Immigrants, Chobani’s Founder Draws Threats - The New York Times | By many measures, Chobani embodies the classic American immigrant success story. Its founder... | 0 |
 
 
 ### Model
@@ -150,7 +165,7 @@ The WELFake dataset can be downloaded from Kaggle (https://www.kaggle.com/datase
 
 The dataset presents typical issues found in real-world text data, including missing or empty text fields, duplicated articles, noisy formatting and punctuation.
 
-These issues are systematically addressed during the preprocessing phase through data cleaning and filtering steps. Remaining limitations related to data quality are acknowledged and considered during model evaluation and monitoring.
+These issues are systematically addressed during the preprocessing phase through data cleaning and filtering steps. Remaining limitations related to data quality are considered during model evaluation and monitoring.
 
 ### Data Preprocessing 
 
@@ -274,7 +289,7 @@ The system must satisfy the following functional requirements:
 |---|---|
 | **NFR-5.1** | Code shall follow PEP-8 style guidelines (enforced by Ruff linter). |
 | **NFR-5.2** | Functions shall have docstrings explaining parameters and return values. |
-| **NFR-5.3** | System shalluse modular architecture with clear separation of concerns. |
+| **NFR-5.3** | System shall use modular architecture with clear separation of concerns. |
 | **NFR-5.4** | Configuration shall be externalized (YAML files, environment variables) |
 | **NFR-5.5** | Code shall achieve ≥80% test coverage (unit + integration tests). |
 
@@ -304,7 +319,7 @@ The system must satisfy the following functional requirements:
 Training is implemented as a reproducible, configuration-driven pipeline that builds a complete “model bundle” for inference. The main entrypoint is `pipelines/train_pipeline.py` (typically executed as `python -m pipelines.train_pipeline --config configs/train.yml`) and it is designed to be fully repeatable given the same data and configuration.
 
 At runtime, the pipeline resolves the dataset either from a local CSV file (`paths.raw_data_path`) and, when Weights & Biases (W&B) logging is enabled, by downloading a dataset artifact (`data.dataset_artifact`).
-Raw data is loaded from CSV using `src/data/load_data.py` and processed through a deterministic preprocessing pipeline implemented in `src/data/preprocess.py`. This pipeline combines title and body text, normalizes and cleans textual content, removes missing entries, and eliminates duplicates articles.
+Raw data is loaded from CSV using `src/data/load_data.py` and processed through a deterministic preprocessing pipeline implemented in `src/data/preprocess.py`. This pipeline combines title and body text, normalizes and cleans textual content, removes missing entries, and eliminates duplicate articles.
 
 Feature extraction is performed using TF-IDF vectorization (`src/features/vectorize.py`). A supervised classifier is then trained on the feature vectors (the default configuration uses Logistic Regression implemented in `src/models/train.py`). To improve the interpretability and reliability of the output probabilities as credibility scores, probability calibration is applied (`src/models/calibrate.py`). The calibrated model is subsequently evaluated on a validation split, and evaluation metrics are computed and persisted using `src/models/evaluate.py`.
 
