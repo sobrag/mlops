@@ -70,7 +70,7 @@ def main():
 
         with st.spinner("Analyzing..."):
             result = call_predict_api(text, API_URL)
-
+            
         if "error" in result:
             st.error(result["error"])
             return
@@ -85,8 +85,6 @@ def main():
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("Credibility Score", f"{score:.1f} / 100")
-        with col2:
-            st.metric("Label", label.upper())
         with col3:
             st.metric("Confidence", f"{probability * 100:.1f}%")
 
