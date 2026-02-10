@@ -15,31 +15,27 @@
 ---
 
 ## TABLE OF CONTENTS
-- [System Specification Document (SSD)](#system-specification-document-ssd)
-  - [News Credibility Estimation](#news-credibility-estimation)
-  - [TABLE OF CONTENTS](#table-of-contents)
-  - [Business Problem](#business-problem)
-  - [Definitions, Acronyms, and Abbreviations](#definitions-acronyms-and-abbreviations)
-  - [Machine Learning Problem Formulation](#machine-learning-problem-formulation)
-    - [Input Dataset](#input-dataset)
-    - [Model](#model)
-    - [Output](#output)
-  - [Key Performance Indicators (KPIs)](#key-performance-indicators-kpis)
-  - [Data Specification](#data-specification)
-    - [Data Sources](#data-sources)
-    - [Data Flow](#data-flow)
-    - [Data Quality](#data-quality)
-    - [Data Preprocessing](#data-preprocessing)
-  - [Functional Requirements](#functional-requirements)
-  - [FR-1: Data Management](#fr-1-data-management)
-    - [FR-2: Model Training](#fr-2-model-training)
-  - [Non-functional Requirements](#non-functional-requirements)
-  - [Project Architecture](#project-architecture)
-    - [Training](#training)
-    - [Validation](#validation)
-    - [Deployment](#deployment)
-    - [Monitoring](#monitoring)
-  - [Risk Analysis](#risk-analysis)
+- [Business Problem](#business-problem)
+- [Definitions, Acronyms, and Abbreviations](#definitions-acronyms-and-abbreviations)
+- [Machine Learning Problem Formulation](#machine-learning-problem-formulation)
+  - [Input Dataset](#input-dataset)
+  - [Model](#model)
+  - [Output](#output)
+- [Key Performance Indicators (KPIs)](#key-performance-indicators-kpis)
+- [Data Specification](#data-specification)
+  - [Data Sources](#data-sources)
+  - [Data Flow](#data-flow)
+  - [Data Quality](#data-quality)
+  - [Data Preprocessing](#data-preprocessing)
+- [Functional Requirements](#functional-requirements)
+- [Non-functional Requirements](#non-functional-requirements)
+- [Project Architecture](#project-architecture)
+  - [Training](#training)
+  - [Validation](#validation)
+  - [Deployment](#deployment)
+  - [Monitoring](#monitoring)
+- [Technology Selection Justification](#technology-selection-justification)
+- [Risk Analysis](#risk-analysis)
 
 ## Business Problem
 
@@ -174,38 +170,133 @@ The preprocessing logic is modular, reusable, and fully reproducible, ensuring c
 
 The system must satisfy the following functional requirements:
 
-## FR-1: Data Management
+### FR-1: Data Management
 
 | ID | Requirement |
 |---|---|
 | **FR-1.1** | The system shall load the WELFake dataset from local storage or Weights & Biases artifacts. |
 | **FR-1.2** | The system shall apply a deterministic text preprocessing pipeline (lowercase, regex cleaning, whitespace normalization) before model training and inference. |
-| **FR-1.3** | The system shall remove articles with missing text or duplicate content |
-| **FR-1.4** | The system shall split data into train, validation, and test sets with stratified sampling |
-| **FR-1.4** | The system shall train a machine learning model for news credibility estimation and produce reproducible results given the same data and configuration. |
-| **FR-1.5** | The system shall support dataset versioning through Weights & Biases artifacts when enabled |
+| **FR-1.3** | The system shall remove articles with missing text or duplicate content. |
+| **FR-1.4** | The system shall split data into train, validation, and test sets with stratified sampling. |
+| **FR-1.5** | The system shall support dataset versioning through Weights & Biases artifacts when enabled. |
 
 ### FR-2: Model Training
 
+| ID | Requirement |
+|---|---|
+| **FR-2.1** | The system shall train a machine learning model for news credibility estimation and produce reproducible results given the same data and configuration. |
+| **FR-2.2** | The system shall use a fixed random seed for reproducible results. |
+| **FR-2.3** | The system shall serialize trained models, vectorizers, and configurations to disk and log them as Weights & Biases artifacts. |
+| **FR-2.4** | The system shall compute and log evaluation metrics. |
+| **FR-2.5** | The model shall output a credibility score expressed as a probability associated with the _Real News_ class. |
+| **FR-2.6** | The system shall generate reference statistics for drift detection during training. |
 
+### FR-3: Model Inference
 
-| **FR-1.5** | The model shall output a credibility score expressed as a probability associated with the _Real News_ class. |
-| **FR06** | The system shall support model retraining to incorporate new data or updated configurations. |
-| **FR07** | The trained model and preprocessing artifacts shall be reusable consistently applied across training and inference pipelines. |
+| ID | Requirement |
+|----|-------------|
+| **FR-3.1** | The system shall expose a REST API for model predictions. | 
+| **FR-3.2** | The system shall accept single article predictions via POST /predict endpoint. | 
+| **FR-3.3** | The system shall accept batch predictions via POST /predict/batch endpoint. | 
+| **FR-3.4** | The system shall return credibility scores (0-100) derived from model probabilities. | 
+| **FR-3.5** | The system shall load model artifacts from local storage or Weights & Biases. | 
+| **FR-3.6** | The system shall validate input text is non-empty before prediction. |
+
+### FR-4: User Interface
+
+| ID | Requirement |
+|----|-------------|
+| **FR-4.1** | The system shall provide a Streamlit web interface for interactive analysis | 
+| **FR-4.2** | The system shall support single article text input and analysis | 
+| **FR-4.3** | The system shall support CSV file upload for batch processing | 
+| **FR-4.4** | The system shall display credibility scores with color-coded indicators | 
+| **FR-4.5** | The system shall visualize prediction confidence and text statistics |
+
+### FR-5: Monitoring and Drift Detection
+
+| ID | Requirement |
+|----|-------------|
+| **FR-5.1** | The system shall collect Prometheus metrics for API requests, latency, and errors. | 
+| **FR-5.2** | The system shall monitor prediction distribution and input text characteristics. | 
+| **FR-5.3** | The system shall implement drift detection using Population Stability Index (PSI) and Jensen-Shannon divergence. | 
+| **FR-5.4** | The system shall compare incoming data against reference statistics from training | 
+| **FR-5.5** | The system SHALL flag drift when PSI > 0.25 or JS divergence > 0.05. | 
+| **FR-5.6** | The system SHALL expose drift status via GET /drift/status endpoint. |
+
+### FR-6: Model Retraining
+
+| ID | Requirement |
+|----|-------------|
+| **FR-6.1** | The system shall support model retraining with updated data. | 
+| **FR-6.2** | The system shall version retrained models with unique identifiers. | 
+| **FR-6.3** | The system shall log retraining events to Weights & Biases when enabled. | 
 
 ## Non-functional Requirements
 
+### NFR-1: Performance
+
 | ID | Requirement |
 |---|---|
-| **NFR01** | Data preprocessing, model training, and inference shall be reproducible given the same input data, configuration parameters, and random seed.
-| **NFR02** | Datasets, preprocessing artifacts, and trained models shall be versioned to ensure traceability and reproducibility across experiments and deployments.
-| **NFR03** | The system shall support batch processing for both training and inference workflows.
-| **NFR04** | Data quality issues and known limitations shall be explicitly documented and handled within the preprocessing pipeline.
-| **NFR05** | The system architecture shall support modular model updates and allow future extensions for monitoring and retraining.
-| **NFR06** | System behavior, input data distributions, and model outputs shall be observable through logging and monitoring mechanisms.
-| **NFR07** | The system shall ensure consistency of model behavior across runs, enabling the detection of anomalous changes or degradation over time.
-| **NFR08** | The trained model shall achieve an acceptable baseline predictive performance, suitable for demonstrating the feasibility of the proposed approach.
-| **NFR09** | Inference latency shall be acceptable for interactive use, such as integration into a web-based API or user-facing application.
+| **NFR-1.1** | Single prediction latency SHALL be <100ms at p95 percentile. |
+| **NFR-1.2** | Model loading time SHALL be <5 seconds on system startup. |
+
+### NFR-2: Reliability
+
+| ID | Requirement |
+|---|---|
+| **NFR-2.1** | System uptime shall be ≥99.5% excluding planned maintenance. |
+| **NFR-2.2** | API shall gracefully handle invalid inputs with appropriate error messages |
+| **NFR-2.3** | API shall implement retry logic for transient failures. |
+| **NFR-2.4** | System shall log all errors with sufficient context for debugging. |
+| **NFR-2.5** | API shall provide health check endpoints for monitoring. |
+
+### NFR-3: Scalability
+
+| ID | Requirement |
+|---|---|
+| **NFR-3.1** | API shall be horizontally scalable via container replication. |
+| **NFR-3.2** | System shall support stateless operation (no session affinity required). |
+| **NFR-3.3** | Model artifacts shall be loadable from centralized storage (W&B).|
+
+### NFR-4: Reproducibility
+
+| ID | Requirement |
+|---|---|
+| **NFR-4.1** | All training runs shall use fixed random seeds for determinism. |
+| **NFR-4.2** | Preprocessing shall be identical across training and inference. |
+| **NFR-4.3** | Model artifacts shall include full configuration and dependency versions. |
+| **NFR-4.4** | Experiments shall be logged to Weights & Biases with complete metadata. |
+| **NFR-4.5** | Docker images SHALL specify exact library versions (pinned requirements). |
+
+### NFR-5: Maintainability
+
+| ID | Requirement |
+|---|---|
+| **NFR-5.1** | Code shall follow PEP-8 style guidelines (enforced by Ruff linter). |
+| **NFR-5.2** | Functions shall have docstrings explaining parameters and return values. |
+| **NFR-5.3** | System shalluse modular architecture with clear separation of concerns. |
+| **NFR-5.4** | Configuration shall be externalized (YAML files, environment variables) |
+| **NFR-5.5** | Code shall achieve ≥80% test coverage (unit + integration tests). |
+
+### NFR-6: Security 
+
+| ID | Requirement |
+|---|---|
+| **NFR-6.1** | API shall validate and sanitize all inputs to prevent injection attacks. |
+| **NFR-6.2** | System shall not expose sensitive information in error messages or logs. |
+| **NFR-6.3** | API keys (W&B) shall be stored in environment variables, never hardcoded. |
+| **NFR-6.4** | Docker containers SHALL run as non-root users. |
+
+### NFR-7: Observability
+
+| ID | Requirement |
+|---|---|
+| **NFR-7.1** | System shall expose Prometheus metrics at /metrics endpoint. |
+| **NFR-7.2** | Metrics shall include request count, latency histograms, error rates. |
+| **NFR-7.3** | System shall log structured JSON logs with timestamps and log levels. |
+| **NFR-7.4** | Grafana dashboards shall visualize key system and model metrics. |
+| **NFR-7.5** | Drift detection SHALL generate alerts for Prometheus Alertmanager. |
+
 
 ## Project Architecture
 
@@ -235,6 +326,32 @@ At runtime, the API resolves the model bundle either from the local artifacts di
 Monitoring is implemented in two complementary ways. For service observability, the API exports Prometheus-compatible metrics at `/metrics` using `prometheus-flask-exporter` (`src/app/main.py`). Prometheus scrapes these metrics as the `news_credibility_api` job targeting `api:5000` (`src/monitoring/prometheus/prometheus.yml`), and Grafana is provisioned to read from Prometheus and load dashboards automatically (`src/monitoring/grafana/provisioning/`).
 
 For ML-specific monitoring, a batch drift detection job is implemented in `pipelines/ct_trigger.py` and configured via `configs/ct.yml`. The job compares incoming batches (for example CSVs under `data/incoming/`) against reference statistics derived from a reference slice of the dataset, and computes drift signals on both the inputs and the model output distribution. Concretely, it computes PSI on text length distribution, PSI on predicted probability distribution, and Jensen-Shannon divergence on token-frequency distributions. The outputs include reference statistics persisted to `artifacts/reference_stats.json` and a timestamped drift report JSON under `results/`. An optional auto-retraining path exists in the code but is disabled by default and gated by `auto_retrain` in `configs/ct.yml`.
+
+## Technology Selection Justification
+
+### Why Flask for API Framework?
+
+We evaluated several API frameworks before selecting Flask:
+
+| Framework | Pros | Cons | Decision |
+|-----------|------|------|----------|
+| **Flask** | Simple, mature, easy testing, Prometheus integration, Software Developer is familiar with it | Less features than FastAPI, no async | ✓ **Selected** |
+| **FastAPI** | Modern, async, auto-documentation | Learning curve, newer ecosystem | Unnecessary complexity |
+| **Django REST** | Full-featured, batteries included | Heavy, overkill for ML serving | Too heavy |
+
+**Rationale**: Flask's simplicity and mature ecosystem make it ideal for our ML model serving. Prometheus integration via `prometheus-flask-exporter` is battle-tested. The fact that our Software Developer is already familiar in Flask allows us to implement the API efficiently without a learning curve.
+
+### Why Prometheus + Grafana for Monitoring?
+
+Prometheus + Grafana was selected because it is the industry-standard open-source stack for cloud-native monitoring. It was chosen over alternative solutions for three main reasons:
+
+- **Cost-Effectiveness**: It provides enterprise-grade monitoring for free, avoiding the high licensing costs of proprietary platforms.
+- **Operational Efficiency**: It is lightweight and integrates natively with Docker.
+- **Specialized Performance**: It is purpose-built for real-time metrics and alerting, making it the most effective tool for tracking model drift and API health without unnecessary complexity.
+
+### Why Weights & Biases for Experiment Tracking?
+
+Weights & Biases (W&B) was selected for experiment tracking and artifact management due to its seamless integration with Python ML workflows, support for reproducibility, and robust artifact versioning capabilities. It allows us to log training runs, track metrics, and manage model artifacts in a centralized way, which is essential for maintaining traceability and reproducibility across the model lifecycle.
 
 ## Risk Analysis
 The system is designed for local deployment and reproducible experimentation; the table below summarizes the main risks and the mitigations that are already implemented.

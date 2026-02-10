@@ -24,6 +24,7 @@
     - [Code Versioning](#code-versioning)
     - [Model Versioning](#model-versioning)
     - [Data Versioning](#data-versioning)
+  - [Team Communication & Notifications](#team-communication--notifications)
   - [CI/CD and Automation](#cicd-and-automation)
     - [Continuous Integration](#continuous-integration)
     - [Quality Gates](#quality-gates)
@@ -36,8 +37,6 @@
     - [Drift Detection](#drift-detection)
     - [Incident Response](#incident-response)
     - [Monitoring Stack](#monitoring-stack)
-      - [Components](#components)
-      - [Metrics Collected](#metrics-collected)
     - [Docker setup](#docker-setup)
   - [Runtime and Environment Governance](#runtime-and-environment-governance)
   - [Containerization Policy](#containerization-policy)
@@ -157,6 +156,39 @@ This separation avoids committing large or sensitive datasets to the repository,
 
 ---
 
+## Team Communication & Notifications
+
+**Platform**: Slack
+**Workspace**: MLOps News Credibility Team
+**Purpose**: Real-time notifications for development events, deployment activities, and system alerts
+
+### Slack Integrations
+
+**1. GitHub Integration** (via GitHub Slack App):
+
+**Commit Notifications**:
+- **Channel**: `#github-notifications`
+- **Triggers**: Push to main branch, new commits on PRs
+- **Information**: Commit author, message, changed files count, commit hash
+
+**Pull Request Notifications**:
+- **Channel**: `#github-notifications`
+- **Triggers**: PR opened, review requested, PR approved, PR merged, PR closed
+- **Information**: PR title, author, reviewers, status, link
+
+**CI/CD Pipeline Status**:
+- **Channel**: `#github-notifications`
+- **Triggers**: GitHub Actions workflow started, completed (success/failure)
+- **Information**: Workflow name, branch, status, duration, logs link
+
+**2. Drift Detection Alerts**:
+
+**Configuration**:
+- **Channel**: `#wb-alert`
+- **Trigger**: Drift detection threshold exceeded (PSI > 0.25 or JS divergence > 0.05)
+
+---
+
 ## CI/CD and Automation
 
 **Platform**: GitHub Actions
@@ -175,17 +207,16 @@ All checks below are implemented in `.github/workflows/ci-full.yml`. A failure i
 
 | Check | What it runs | Purpose |
 | --- | --- | --- |
-| Lint | `ruff check .` | Enforce style and catch static issues |
-| Tests (core ML) | `python -m pytest tests/ -v --ignore=tests/api/ --ignore=tests/ui/` | Validate preprocessing, training utilities, artifact I/O |
-| Tests (API) | `python -m pytest tests/api/ -v --tb=short` | Validate Flask endpoints and service integration (mock/real artifacts) |
-| Tests (UI) | `python -m pytest tests/ui/ -v --tb=short` | Validate Streamlit client logic and response handling |
-| Smoke train | `python -m pipelines.train_pipeline --config configs/test.yml --max-rows 200` | Ensure training pipeline executes end-to-end and produces artifacts |
-| Smoke drift | `python -m pipelines.ct_trigger --config configs/ct.yml --incoming data/sample_welfake.csv` (W&B disabled) | Ensure drift pipeline executes and writes a report |
-| Docker compose validation | `docker compose config --quiet` | Validate `docker-compose.yml` is syntactically correct |
-| Docker image builds | `docker build` for API and Streamlit | Ensure Dockerfiles build |
-| Compose bring-up + health | `docker compose up -d` + `curl` checks | Verify services start and key endpoints respond |
-| Cleanup | `docker compose down -v` | Ensure CI job is self-cleaning |
-
+| 1. Lint | `ruff check .` | Enforce style and catch static issues |
+| 2. Tests (core ML) | `python -m pytest tests/ -v --ignore=tests/api/ --ignore=tests/ui/` | Validate preprocessing, training utilities, artifact I/O |
+| 3. Tests (API) | `python -m pytest tests/api/ -v --tb=short` | Validate Flask endpoints and service integration (mock/real artifacts) |
+| 4. Tests (UI) | `python -m pytest tests/ui/ -v --tb=short` | Validate Streamlit client logic and response handling |
+| 5. Smoke train | `python -m pipelines.train_pipeline --config configs/test.yml --max-rows 200` | Ensure training pipeline executes end-to-end and produces artifacts |
+| 6. Smoke drift | `python -m pipelines.ct_trigger --config configs/ct.yml --incoming data/sample_welfake.csv` (W&B disabled) | Ensure drift pipeline executes and writes a report |
+| 7. Docker compose validation | `docker compose config --quiet` | Validate `docker-compose.yml` is syntactically correct |
+| 8. Docker image builds | `docker build` for API and Streamlit | Ensure Dockerfiles build |
+| 9. Compose bring-up + health | `docker compose up -d` + `curl` checks | Verify services start and key endpoints respond |
+| 10. Cleanup | `docker compose down -v` | Ensure CI job is self-cleaning |
 
 ### Deployment
 
